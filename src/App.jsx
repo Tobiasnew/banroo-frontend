@@ -1,35 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
+    <main style={styles.page}>
+      <section style={styles.hero}>
+        <h1 style={styles.title}>Banroo</h1>
+        <p style={styles.claim}>Match. Create. Release.</p>
+        <p style={styles.subtitle}>
+          Verbinde Musiker*innen weltweit. Finde Matches. Erschaffe Songs.
         </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      </section>
+    </main>
   )
+}
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    background: '#0b0b0f',
+    color: '#ffffff',
+    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+  },
+  hero: {
+    textAlign: 'center',
+    maxWidth: '600px',
+    padding: '40px',
+  },
+  title: {
+    fontSize: '3rem',
+    marginBottom: '12px',
+    letterSpacing: '2px',
+  },
+  claim: {
+    fontSize: '1.4rem',
+    fontWeight: '600',
+    marginBottom: '16px',
+  },
+  subtitle: {
+    opacity: 0.75,
+    lineHeight: 1.6,
+  },
 }
 
 export default App
