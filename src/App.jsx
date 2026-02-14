@@ -1,22 +1,21 @@
-import Hero from './components/Hero'
+import Hero from "./components/Hero"
+import Features from "./components/Features"
 
 function App() {
   return (
-    <main style={styles.page}>
+    <div style={styles.page}>
       <Hero />
-    </main>
+      <Features />
+    </div>
   )
 }
 
 const styles = {
   page: {
-    minHeight: '100vh',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    background: '#0b0b0f',
-    color: '#ffffff',
-    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+    background: "#0b0b0f",
+    color: "#ffffff",
+    minHeight: "100vh",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
   },
 }
 
