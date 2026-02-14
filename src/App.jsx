@@ -1,22 +1,20 @@
-import Hero from "./components/Hero"
-import Features from "./components/Features"
+import { Routes, Route } from "react-router-dom";
+import SiteLayout from "./layouts/SiteLayout.jsx";
+import Home from "./pages/Home.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 
 function App() {
   return (
-    <div style={styles.page}>
-      <Hero />
-      <Features />
-    </div>
-  )
+    <Routes>
+      <Route element={<SiteLayout />}>
+        <Route index element={<Home />} />
+        <Route path="app" element={<Dashboard />} />
+      </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Home />} />
+    </Routes>
+  );
 }
 
-const styles = {
-  page: {
-    background: "#0b0b0f",
-    color: "#ffffff",
-    minHeight: "100vh",
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-  },
-}
-
-export default App
+export default App;
