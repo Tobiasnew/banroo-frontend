@@ -72,9 +72,10 @@ const styles = {
     justifyContent: "center",
     flexWrap: "wrap",
   },
-  card: {
+ card: {
     backgroundColor: theme.colors.surface,
-    border: `1px solid ${theme.colors.border}`,
+    border: "1px solid #2E2E2E",
+    borderTop: "1px solid rgba(245, 158, 11, 0.3)",
     borderRadius: theme.borderRadius.lg,
     padding: "36px 28px",
     minWidth: "260px",

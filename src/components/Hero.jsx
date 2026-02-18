@@ -95,6 +95,7 @@ const styles = {
     lineHeight: 1.15,
     marginBottom: "28px",
     letterSpacing: "-0.02em",
+    textShadow: "0 0 80px rgba(245, 158, 11, 0.15)",
   },
   gradient: {
     background: "linear-gradient(90deg, #7C3AED, #F59E0B)",

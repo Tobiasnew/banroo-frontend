@@ -1,5 +1,5 @@
 :root {
-font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.87);
@@ -21,8 +21,22 @@ body {
   background-color: #0E0B1A;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+  background:
+    radial-gradient(ellipse 35% 70% at 0% 50%, rgba(245, 120, 20, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 35% 70% at 100% 50%, rgba(245, 120, 20, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 25% at 50% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+}
+
 #root {
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 a {

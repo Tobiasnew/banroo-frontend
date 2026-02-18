@@ -16,7 +16,7 @@ function SiteLayout() {
 const styles = {
   wrapper: {
     minHeight: "100vh",
-    background: theme.colors.background,
+    background: "#0E0B1A",
     color: theme.colors.textPrimary,
     fontFamily:
       "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",

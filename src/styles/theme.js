@@ -1,7 +1,7 @@
 export const theme = {
   colors: {
-    primary: "#7C3AED",       // Banroo Violet
-    primaryHover: "#6D28D9",
+    primary: "#8B5CF6",
+    primaryHover: "#7C3AED",
     accent: "#F59E0B",        // Warm Amber
     background: "#0E0B1A",   
     surface: "#1A1A1A",       // Card/Panel
