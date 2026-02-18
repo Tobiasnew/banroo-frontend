@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { theme } from "../styles/theme";
 
 function SiteLayout() {
   return (
@@ -15,8 +16,8 @@ function SiteLayout() {
 const styles = {
   wrapper: {
     minHeight: "100vh",
-    background: "#0b0b0f",
-    color: "#ffffff",
+    background: theme.colors.background,
+    color: theme.colors.textPrimary,
     fontFamily:
       "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },

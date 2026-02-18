@@ -3,7 +3,7 @@ export const theme = {
     primary: "#7C3AED",       // Banroo Violet
     primaryHover: "#6D28D9",
     accent: "#F59E0B",        // Warm Amber
-    background: "#0F0F0F",    // Near Black
+    background: "#0E0B1A",   
     surface: "#1A1A1A",       // Card/Panel
     surfaceHover: "#242424",
     border: "#2E2E2E",
