@@ -1,10 +1,12 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
+
   return (
     <header style={styles.header}>
       <div style={styles.inner}>
-        <div style={styles.brand}>Banroo</div>
+        <div style={styles.brand} onClick={() => navigate("/")}>Banroo</div>
 
         <nav style={styles.nav}>
           <NavLink
@@ -31,11 +33,21 @@ function Navbar() {
           <NavLink
             to="/login"
             style={({ isActive }) => ({
-              ...styles.loginButton,
-              ...(isActive ? styles.loginButtonActive : null),
+              ...styles.link,
+              ...(isActive ? styles.active : null),
             })}
           >
             Login
+          </NavLink>
+
+          <NavLink
+            to="/register"
+            style={({ isActive }) => ({
+              ...styles.registerButton,
+              ...(isActive ? styles.registerButtonActive : null),
+            })}
+          >
+            Registrieren
           </NavLink>
         </nav>
       </div>
@@ -48,7 +60,7 @@ const styles = {
     position: "sticky",
     top: 0,
     zIndex: 10,
-    background: "rgba(11, 11, 15, 0.85)",
+    background: "rgba(14, 11, 26, 0.85)",
     backdropFilter: "blur(10px)",
     borderBottom: "1px solid rgba(255,255,255,0.08)",
   },
@@ -64,10 +76,12 @@ const styles = {
   brand: {
     fontWeight: 800,
     letterSpacing: "0.3px",
+    cursor: "pointer",
+    color: "#ffffff",
   },
   nav: {
     display: "flex",
-    gap: "14px",
+    gap: "8px",
     alignItems: "center",
   },
   link: {
@@ -83,7 +97,7 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.18)",
     background: "rgba(255,255,255,0.06)",
   },
-  loginButton: {
+  registerButton: {
     textDecoration: "none",
     color: "#ffffff",
     fontSize: "14px",
@@ -92,7 +106,7 @@ const styles = {
     border: "1px solid rgba(124, 58, 237, 0.6)",
     background: "rgba(124, 58, 237, 0.2)",
   },
-  loginButtonActive: {
+  registerButtonActive: {
     background: "rgba(124, 58, 237, 0.5)",
     border: "1px solid rgba(124, 58, 237, 1)",
   },
