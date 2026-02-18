@@ -1,7 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 function Hero() {
-  const handleStart = () => {
-    alert("Matching startet bald 🚀")
-  }
+  const navigate = useNavigate();
 
   return (
     <section style={styles.hero}>
@@ -18,7 +18,7 @@ function Hero() {
       <div style={styles.buttonGroup}>
         <button
           style={styles.primaryButton}
-          onClick={handleStart}
+          onClick={() => navigate("/match")}
         >
           Start Matching
         </button>
@@ -37,31 +37,26 @@ const styles = {
     padding: "40px",
     maxWidth: "800px",
   },
-
   title: {
     fontSize: "64px",
     marginBottom: "16px",
   },
-
   subtitle: {
     fontSize: "24px",
     marginBottom: "12px",
     opacity: 0.9,
   },
-
   description: {
     fontSize: "18px",
     marginBottom: "40px",
     opacity: 0.7,
   },
-
   buttonGroup: {
     display: "flex",
     justifyContent: "center",
     gap: "16px",
     flexWrap: "wrap",
   },
-
   primaryButton: {
     background: "#ffffff",
     color: "#000000",
@@ -72,7 +67,6 @@ const styles = {
     cursor: "pointer",
     fontWeight: "600",
   },
-
   secondaryButton: {
     background: "transparent",
     color: "#ffffff",
@@ -84,4 +78,4 @@ const styles = {
   },
 }
 
-export default Hero
+export default Hero;

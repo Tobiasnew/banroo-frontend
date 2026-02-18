@@ -27,6 +27,16 @@ function Navbar() {
           >
             Dashboard
           </NavLink>
+
+          <NavLink
+            to="/login"
+            style={({ isActive }) => ({
+              ...styles.loginButton,
+              ...(isActive ? styles.loginButtonActive : null),
+            })}
+          >
+            Login
+          </NavLink>
         </nav>
       </div>
     </header>
@@ -72,6 +82,19 @@ const styles = {
     color: "#ffffff",
     border: "1px solid rgba(255,255,255,0.18)",
     background: "rgba(255,255,255,0.06)",
+  },
+  loginButton: {
+    textDecoration: "none",
+    color: "#ffffff",
+    fontSize: "14px",
+    padding: "8px 16px",
+    borderRadius: "10px",
+    border: "1px solid rgba(124, 58, 237, 0.6)",
+    background: "rgba(124, 58, 237, 0.2)",
+  },
+  loginButtonActive: {
+    background: "rgba(124, 58, 237, 0.5)",
+    border: "1px solid rgba(124, 58, 237, 1)",
   },
 };
 

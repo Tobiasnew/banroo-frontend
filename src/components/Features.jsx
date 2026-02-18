@@ -8,8 +8,7 @@ function Features() {
           <div style={styles.kicker}>1</div>
           <h3 style={styles.title}>Match finden</h3>
           <p style={styles.text}>
-            Wähle Instrument &amp; Genre. Banroo verbindet dich mit passenden
-            Musiker*innen.
+            Wähle dein Instrument & Genre. Banroo verbindet dich mit passenden Musiker*innen.
           </p>
         </div>
 
@@ -17,7 +16,7 @@ function Features() {
           <div style={styles.kicker}>2</div>
           <h3 style={styles.title}>Gemeinsam bauen</h3>
           <p style={styles.text}>
-            Tausche Ideen aus, lade Spuren hoch und entwickle Songs zusammen.
+            Tausche Ideen aus, lade Spuren hoch und entwickle Songs im Projekt-Flow.
           </p>
         </div>
 
@@ -25,7 +24,7 @@ function Features() {
           <div style={styles.kicker}>3</div>
           <h3 style={styles.title}>Release</h3>
           <p style={styles.text}>
-            Exportiere dein Projekt, veröffentliche es – und sammle Feedback.
+            Exportiere deinen Track – und veröffentliche ihn, wenn du bereit bist.
           </p>
         </div>
       </div>
@@ -57,23 +56,24 @@ const styles = {
     background: "#111",
     padding: "30px",
     borderRadius: "12px",
-    minWidth: "250px",
+    minWidth: "260px",
     maxWidth: "320px",
     textAlign: "left",
     border: "1px solid rgba(255,255,255,0.08)",
   },
 
   kicker: {
-    width: "34px",
-    height: "34px",
-    borderRadius: "999px",
+    width: "28px",
+    height: "28px",
+    borderRadius: "8px",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "14px",
+    marginBottom: "14px",
+    background: "#fff",
+    color: "#000",
     fontWeight: "700",
-    background: "rgba(255,255,255,0.10)",
-    marginBottom: "12px",
+    fontSize: "14px",
   },
 
   title: {
@@ -82,9 +82,9 @@ const styles = {
   },
 
   text: {
-    margin: 0,
     opacity: 0.75,
     lineHeight: 1.6,
+    margin: 0,
   },
 }
 
