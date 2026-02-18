@@ -1,7 +1,14 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function Navbar() {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <header style={styles.header}>
@@ -20,35 +27,48 @@ function Navbar() {
             Home
           </NavLink>
 
-          <NavLink
-            to="/app"
-            style={({ isActive }) => ({
-              ...styles.link,
-              ...(isActive ? styles.active : null),
-            })}
-          >
-            Dashboard
-          </NavLink>
+          {user && (
+            <NavLink
+              to="/app"
+              style={({ isActive }) => ({
+                ...styles.link,
+                ...(isActive ? styles.active : null),
+              })}
+            >
+              Dashboard
+            </NavLink>
+          )}
 
-          <NavLink
-            to="/login"
-            style={({ isActive }) => ({
-              ...styles.link,
-              ...(isActive ? styles.active : null),
-            })}
-          >
-            Login
-          </NavLink>
+          {!user ? (
+            <>
+              <NavLink
+                to="/login"
+                style={({ isActive }) => ({
+                  ...styles.link,
+                  ...(isActive ? styles.active : null),
+                })}
+              >
+                Login
+              </NavLink>
 
-          <NavLink
-            to="/register"
-            style={({ isActive }) => ({
-              ...styles.registerButton,
-              ...(isActive ? styles.registerButtonActive : null),
-            })}
-          >
-            Registrieren
-          </NavLink>
+              <NavLink
+                to="/register"
+                style={({ isActive }) => ({
+                  ...styles.registerButton,
+                  ...(isActive ? styles.registerButtonActive : null),
+                })}
+              >
+                Registrieren
+              </NavLink>
+            </>
+          ) : (
+            <>
+              <span style={styles.username}>👤 {user.name}</span>
+              <button onClick={handleLogout} style={styles.logoutButton}>
+                Logout
+              </button>
+            </>
+          )}
         </nav>
       </div>
     </header>
@@ -109,6 +129,20 @@ const styles = {
   registerButtonActive: {
     background: "rgba(124, 58, 237, 0.5)",
     border: "1px solid rgba(124, 58, 237, 1)",
+  },
+  username: {
+    color: "rgba(255,255,255,0.75)",
+    fontSize: "14px",
+    padding: "8px 10px",
+  },
+  logoutButton: {
+    backgroundColor: "transparent",
+    color: "rgba(255,255,255,0.6)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: "10px",
+    padding: "8px 14px",
+    fontSize: "14px",
+    cursor: "pointer",
   },
 };
 
