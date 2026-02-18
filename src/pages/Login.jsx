@@ -1,9 +1,19 @@
 // src/pages/Login.jsx
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { theme } from "../styles/theme";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+
+  const handleLogin = () => {
+    if (!email) return;
+    login(email);
+    navigate("/app");
+  };
 
   return (
     <div style={{
@@ -34,6 +44,8 @@ function Login() {
         <input
           type="email"
           placeholder="E-Mail"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
           style={{
             width: "100%",
             padding: theme.spacing.md,
@@ -63,18 +75,20 @@ function Login() {
           }}
         />
 
-        <button style={{
-          width: "100%",
-          padding: theme.spacing.md,
-          backgroundColor: theme.colors.primary,
-          color: "#fff",
-          border: "none",
-          borderRadius: theme.borderRadius.sm,
-          fontSize: theme.fontSizes.md,
-          fontWeight: theme.fontWeights.semibold,
-          cursor: "pointer",
-          marginBottom: theme.spacing.lg,
-        }}>
+        <button
+          onClick={handleLogin}
+          style={{
+            width: "100%",
+            padding: theme.spacing.md,
+            backgroundColor: theme.colors.primary,
+            color: "#fff",
+            border: "none",
+            borderRadius: theme.borderRadius.sm,
+            fontSize: theme.fontSizes.md,
+            fontWeight: theme.fontWeights.semibold,
+            cursor: "pointer",
+            marginBottom: theme.spacing.lg,
+          }}>
           Einloggen
         </button>
 
@@ -95,7 +109,6 @@ function Login() {
             Jetzt registrieren
           </span>
         </p>
-
       </div>
     </div>
   );
