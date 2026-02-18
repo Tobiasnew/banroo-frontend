@@ -7,28 +7,23 @@ function Hero() {
 
   return (
     <section style={styles.hero}>
-      {/* Glow Background */}
       <div style={styles.glow} />
 
-      {/* Eyebrow */}
-      <p style={styles.eyebrow}>✦ Die Plattform für Musik-Creator</p>
+      <p style={styles.eyebrow}>✦ The platform for music creators</p>
 
-      {/* Title */}
       <h1 style={styles.title}>
-        Musik entsteht,{" "}
-        <span style={styles.gradient}>wenn Menschen</span>
+        Your next{" "}
+        <span style={styles.gradient}>Roo</span>
         <br />
-        sich finden.
+        is one match away.
       </h1>
 
-      {/* Subtitle */}
       <p style={styles.subtitle}>
-        Match. Create. Release. Banroo verbindet Musiker*innen weltweit –
+        Find your perfect collaborator. Build something real.
         <br />
-        und macht aus Ideen echte Songs.
+        Match. Create. Release.
       </p>
 
-      {/* Buttons */}
       <div style={styles.buttonGroup}>
         <button
           style={styles.primaryButton}
@@ -44,13 +39,12 @@ function Hero() {
           onMouseEnter={e => e.target.style.borderColor = "rgba(255,255,255,0.4)"}
           onMouseLeave={e => e.target.style.borderColor = "rgba(255,255,255,0.15)"}
         >
-          Mehr erfahren
+          Learn more
         </button>
       </div>
 
-      {/* Social Proof */}
       <p style={styles.proof}>
-        🎵 Bereits <strong style={{ color: theme.colors.textPrimary }}>1.200+ Musiker*innen</strong> warten auf ihren Match
+        🎵 Already <strong style={{ color: theme.colors.textPrimary }}>1,200+ musicians</strong> waiting for their match
       </p>
     </section>
   );
@@ -72,7 +66,7 @@ const styles = {
     transform: "translateX(-50%)",
     width: "600px",
     height: "400px",
-    background: "radial-gradient(ellipse at center, rgba(124, 58, 237, 0.2) 0%, transparent 70%)",
+    background: "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.18) 0%, transparent 70%)",
     pointerEvents: "none",
     zIndex: 0,
   },
@@ -89,19 +83,20 @@ const styles = {
   title: {
     position: "relative",
     zIndex: 1,
-    fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+    fontSize: "clamp(2.8rem, 7vw, 5rem)",
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textPrimary,
-    lineHeight: 1.15,
+    lineHeight: 1.1,
     marginBottom: "28px",
-    letterSpacing: "-0.02em",
+    letterSpacing: "-0.03em",
     textShadow: "0 0 80px rgba(245, 158, 11, 0.15)",
   },
   gradient: {
-    background: "linear-gradient(90deg, #7C3AED, #F59E0B)",
+    background: "linear-gradient(90deg, #8B5CF6, #F59E0B)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     backgroundClip: "text",
+    display: "inline-block",
   },
   subtitle: {
     position: "relative",
@@ -146,6 +141,7 @@ const styles = {
     zIndex: 1,
     color: theme.colors.textMuted,
     fontSize: theme.fontSizes.sm,
-    },
+  },
 };
+
 export default Hero;
