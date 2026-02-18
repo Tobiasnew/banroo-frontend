@@ -1,7 +1,10 @@
 // src/pages/Register.jsx
+import { useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
 
 function Register() {
+  const navigate = useNavigate();
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -80,15 +83,35 @@ function Register() {
           width: "100%",
           padding: theme.spacing.md,
           backgroundColor: theme.colors.primary,
-          color: theme.colors.textPrimary,
+          color: "#fff",
           border: "none",
           borderRadius: theme.borderRadius.sm,
           fontSize: theme.fontSizes.md,
           fontWeight: theme.fontWeights.semibold,
           cursor: "pointer",
+          marginBottom: theme.spacing.lg,
         }}>
           Registrieren
         </button>
+
+        <p style={{
+          textAlign: "center",
+          color: theme.colors.textSecondary,
+          fontSize: theme.fontSizes.sm,
+        }}>
+          Bereits ein Konto?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            style={{
+              color: theme.colors.primary,
+              cursor: "pointer",
+              fontWeight: theme.fontWeights.semibold,
+            }}
+          >
+            Einloggen
+          </span>
+        </p>
+
       </div>
     </div>
   );

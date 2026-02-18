@@ -1,7 +1,10 @@
 // src/pages/Login.jsx
+import { useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
 
 function Login() {
+  const navigate = useNavigate();
+
   return (
     <div style={{
       minHeight: "100vh",
@@ -64,15 +67,35 @@ function Login() {
           width: "100%",
           padding: theme.spacing.md,
           backgroundColor: theme.colors.primary,
-          color: theme.colors.textPrimary,
+          color: "#fff",
           border: "none",
           borderRadius: theme.borderRadius.sm,
           fontSize: theme.fontSizes.md,
           fontWeight: theme.fontWeights.semibold,
           cursor: "pointer",
+          marginBottom: theme.spacing.lg,
         }}>
           Einloggen
         </button>
+
+        <p style={{
+          textAlign: "center",
+          color: theme.colors.textSecondary,
+          fontSize: theme.fontSizes.sm,
+        }}>
+          Noch kein Konto?{" "}
+          <span
+            onClick={() => navigate("/register")}
+            style={{
+              color: theme.colors.primary,
+              cursor: "pointer",
+              fontWeight: theme.fontWeights.semibold,
+            }}
+          >
+            Jetzt registrieren
+          </span>
+        </p>
+
       </div>
     </div>
   );
