@@ -8,11 +8,21 @@ function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (!email) return;
-    login(email);
-    navigate("/app");
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      await login(email, password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +51,12 @@ function Login() {
           Willkommen zurück
         </h1>
 
+        {error && (
+          <p style={{ color: "red", marginBottom: theme.spacing.md, textAlign: "center", fontSize: theme.fontSizes.sm }}>
+            {error}
+          </p>
+        )}
+
         <input
           type="email"
           placeholder="E-Mail"
@@ -62,6 +78,8 @@ function Login() {
         <input
           type="password"
           placeholder="Passwort"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
           style={{
             width: "100%",
             padding: theme.spacing.md,
@@ -77,6 +95,7 @@ function Login() {
 
         <button
           onClick={handleLogin}
+          disabled={loading}
           style={{
             width: "100%",
             padding: theme.spacing.md,
@@ -86,10 +105,11 @@ function Login() {
             borderRadius: theme.borderRadius.sm,
             fontSize: theme.fontSizes.md,
             fontWeight: theme.fontWeights.semibold,
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
             marginBottom: theme.spacing.lg,
+            opacity: loading ? 0.7 : 1,
           }}>
-          Einloggen
+          {loading ? "Wird eingeloggt..." : "Einloggen"}
         </button>
 
         <p style={{
