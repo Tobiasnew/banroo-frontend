@@ -1,25 +1,9 @@
 // src/pages/Dashboard.jsx
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
-
-const fakeRoos = [
-  {
-    id: 1,
-    title: "Midnight Groove",
-    partner: "Luna K.",
-    genre: "Indie",
-    status: "In Progress",
-    date: "15. Feb 2026",
-  },
-  {
-    id: 2,
-    title: "Neon Pulse",
-    partner: "Marco D.",
-    genre: "Electronic",
-    status: "Idee",
-    date: "10. Feb 2026",
-  },
-];
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 const statusColor = {
   "In Progress": theme.colors.primary,
@@ -29,11 +13,27 @@ const statusColor = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [roos, setRoos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRoos = async () => {
+      const { data, error } = await supabase
+        .from("roos")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error) setRoos(data);
+      setLoading(false);
+    };
+
+    fetchRoos();
+  }, []);
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px" }}>
 
-      {/* Header */}
       <div style={{ marginBottom: theme.spacing.xl }}>
         <p style={{ color: theme.colors.primary, fontSize: theme.fontSizes.sm, fontWeight: theme.fontWeights.semibold, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "8px" }}>
           ✦ Willkommen zurück
@@ -42,11 +42,10 @@ export default function Dashboard() {
           Deine Roos
         </h1>
         <p style={{ color: theme.colors.textSecondary }}>
-          Hier siehst du alle deine laufenden und vergangenen Projekte.
+          {user?.email}
         </p>
       </div>
 
-      {/* Quick Action */}
       <button
         onClick={() => navigate("/match")}
         style={{
@@ -66,44 +65,45 @@ export default function Dashboard() {
         + Neuen Roo starten →
       </button>
 
-      {/* Roo List */}
-      <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.md }}>
-        {fakeRoos.map(roo => (
-          <div key={roo.id} style={{
-            backgroundColor: theme.colors.surface,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            padding: theme.spacing.lg,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: theme.spacing.md,
-          }}>
-            <div>
-              <h3 style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, marginBottom: "4px" }}>
-                {roo.title}
-              </h3>
-              <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
-                mit {roo.partner} · {roo.genre} · {roo.date}
-              </p>
-            </div>
-
-            <span style={{
-              padding: "6px 14px",
-              borderRadius: "999px",
-              backgroundColor: `${statusColor[roo.status]}22`,
-              border: `1px solid ${statusColor[roo.status]}`,
-              color: statusColor[roo.status],
-              fontSize: theme.fontSizes.sm,
-              fontWeight: theme.fontWeights.medium,
+      {loading ? (
+        <p style={{ color: theme.colors.textSecondary }}>Lädt...</p>
+      ) : roos.length === 0 ? (
+        <p style={{ color: theme.colors.textSecondary }}>Noch keine Roos. Starte deinen ersten!</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.md }}>
+          {roos.map(roo => (
+            <div key={roo.id} style={{
+              backgroundColor: theme.colors.surface,
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.borderRadius.md,
+              padding: theme.spacing.lg,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}>
-              {roo.status}
-            </span>
-          </div>
-        ))}
-      </div>
-
+              <div>
+                <h3 style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, marginBottom: "4px" }}>
+                  {roo.title}
+                </h3>
+                <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
+                  {roo.genre} · {new Date(roo.created_at).toLocaleDateString("de-DE")}
+                </p>
+              </div>
+              <span style={{
+                padding: "6px 14px",
+                borderRadius: "999px",
+                backgroundColor: `${statusColor[roo.status] ?? theme.colors.primary}22`,
+                border: `1px solid ${statusColor[roo.status] ?? theme.colors.primary}`,
+                color: statusColor[roo.status] ?? theme.colors.primary,
+                fontSize: theme.fontSizes.sm,
+                fontWeight: theme.fontWeights.medium,
+              }}>
+                {roo.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
