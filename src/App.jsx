@@ -7,6 +7,7 @@ import Register from "./pages/Register.jsx";
 import Match from "./pages/Match.jsx";
 import MatchResult from "./pages/MatchResult.jsx";
 import RooDetail from "./pages/RooDetail.jsx";
+import Profile from "./pages/Profile.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -31,6 +32,14 @@ function App() {
           element={
             <ProtectedRoute>
               <RooDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

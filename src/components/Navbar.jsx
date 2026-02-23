@@ -1,3 +1,4 @@
+// src/components/Navbar.jsx
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -63,7 +64,15 @@ function Navbar() {
             </>
           ) : (
             <>
-              <span style={styles.username}>👤 {user.name}</span>
+              <NavLink
+                to="/profile"
+                style={({ isActive }) => ({
+                  ...styles.link,
+                  ...(isActive ? styles.active : null),
+                })}
+              >
+                👤 Profil
+              </NavLink>
               <button onClick={handleLogout} style={styles.logoutButton}>
                 Logout
               </button>
@@ -131,11 +140,6 @@ const styles = {
   registerButtonActive: {
     background: "rgba(139, 92, 246, 0.5)",
     border: "1px solid rgba(139, 92, 246, 1)",
-  },
-  username: {
-    color: "rgba(255,255,255,0.75)",
-    fontSize: "14px",
-    padding: "8px 10px",
   },
   logoutButton: {
     backgroundColor: "transparent",
