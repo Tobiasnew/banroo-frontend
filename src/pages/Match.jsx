@@ -73,8 +73,7 @@ function Match() {
 
         <button
           disabled={!allSelected}
-          onClick={() => navigate("/match/result")}
-          style={{
+            onClick={() => navigate("/match/result", { state: selected })}          style={{
             width: "100%",
             padding: theme.spacing.md,
             backgroundColor: allSelected ? theme.colors.primary : theme.colors.surface,

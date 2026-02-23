@@ -6,6 +6,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Match from "./pages/Match.jsx";
 import MatchResult from "./pages/MatchResult.jsx";
+import RooDetail from "./pages/RooDetail.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -22,6 +23,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="roo/:id"
+          element={
+            <ProtectedRoute>
+              <RooDetail />
             </ProtectedRoute>
           }
         />

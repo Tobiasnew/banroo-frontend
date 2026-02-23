@@ -72,15 +72,23 @@ export default function Dashboard() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.md }}>
           {roos.map(roo => (
-            <div key={roo.id} style={{
-              backgroundColor: theme.colors.surface,
-              border: `1px solid ${theme.colors.border}`,
-              borderRadius: theme.borderRadius.md,
-              padding: theme.spacing.lg,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}>
+            <div
+              key={roo.id}
+              onClick={() => navigate(`/roo/${roo.id}`)}
+              style={{
+                backgroundColor: theme.colors.surface,
+                border: `1px solid ${theme.colors.border}`,
+                borderRadius: theme.borderRadius.md,
+                padding: theme.spacing.lg,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                cursor: "pointer",
+                transition: "border-color 0.2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.borderColor = theme.colors.primary}
+              onMouseLeave={e => e.currentTarget.style.borderColor = theme.colors.border}
+            >
               <div>
                 <h3 style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, marginBottom: "4px" }}>
                   {roo.title}

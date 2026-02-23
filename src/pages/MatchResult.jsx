@@ -1,6 +1,8 @@
 // src/pages/MatchResult.jsx
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { theme } from "../styles/theme";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "../context/AuthContext";
 
 const fakeMatch = {
   name: "Luna K.",
@@ -14,6 +16,25 @@ const fakeMatch = {
 
 function MatchResult() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+  const selected = location.state || {};
+
+  const handleStartRoo = async () => {
+    const { error } = await supabase.from("roos").insert({
+      user_id: user.id,
+      title: `${selected.genre || "Neuer"} Roo`,
+      genre: selected.genre || "Unbekannt",
+      status: "Idee",
+    });
+
+    if (error) {
+      console.error("Fehler beim Speichern:", error.message);
+      return;
+    }
+
+    navigate("/app");
+  };
 
   return (
     <div style={{
@@ -91,6 +112,7 @@ function MatchResult() {
           </button>
 
           <button
+            onClick={handleStartRoo}
             style={{
               flex: 1,
               padding: theme.spacing.md,
