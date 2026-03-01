@@ -1,5 +1,5 @@
 // src/pages/Profile.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
 import { supabase } from "../lib/supabase";
@@ -11,14 +11,21 @@ const genreOptions = ["Pop", "Rock", "Hip-Hop", "Electronic", "Jazz", "R&B", "Me
 export default function Profile() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [stream, setStream] = useState(null);
   const [profile, setProfile] = useState({
     username: "",
     bio: "",
     instrument: null,
     genre: null,
+    avatar_url: null,
   });
 
   useEffect(() => {
@@ -36,6 +43,61 @@ export default function Profile() {
     fetchProfile();
   }, [user]);
 
+  useEffect(() => {
+    if (showCamera && videoRef.current) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => {
+          setStream(s);
+          videoRef.current.srcObject = s;
+        })
+        .catch(err => console.error("Kamera Fehler:", err));
+    } else if (!showCamera && stream) {
+      stream.getTracks().forEach(t => t.stop());
+      setStream(null);
+    }
+  }, [showCamera]);
+
+  const uploadAvatar = async (file) => {
+    setUploadingAvatar(true);
+    const ext = file.name?.split(".").pop() || "jpg";
+    const path = `${user.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("avatars")
+      .upload(path, file, { upsert: true });
+
+    if (uploadError) {
+      console.error("Upload Fehler:", uploadError.message);
+      setUploadingAvatar(false);
+      return;
+    }
+
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+    const avatar_url = data.publicUrl;
+
+    await supabase.from("profiles").upsert({ id: user.id, avatar_url });
+    setProfile(p => ({ ...p, avatar_url }));
+    setUploadingAvatar(false);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) uploadAvatar(file);
+  };
+
+  const handleCapture = () => {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    canvas.toBlob(blob => {
+      const file = new File([blob], "avatar.jpg", { type: "image/jpeg" });
+      setShowCamera(false);
+      uploadAvatar(file);
+    }, "image/jpeg");
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const { error } = await supabase
@@ -46,6 +108,7 @@ export default function Profile() {
         bio: profile.bio,
         instrument: profile.instrument,
         genre: profile.genre,
+        avatar_url: profile.avatar_url,
       });
 
     setSaving(false);
@@ -75,6 +138,82 @@ export default function Profile() {
       <p style={{ color: theme.colors.textSecondary, marginBottom: theme.spacing.xl }}>
         {user?.email}
       </p>
+
+      {/* Avatar */}
+      <div style={{ display: "flex", alignItems: "center", gap: theme.spacing.lg, marginBottom: theme.spacing.xl }}>
+        <div style={{
+          width: "80px",
+          height: "80px",
+          borderRadius: "50%",
+          backgroundColor: theme.colors.surface,
+          border: `2px solid ${theme.colors.border}`,
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "32px",
+        }}>
+          {profile.avatar_url
+            ? <img src={profile.avatar_url} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : "👤"
+          }
+        </div>
+        <div style={{ display: "flex", gap: theme.spacing.sm }}>
+          <button
+            onClick={() => fileInputRef.current.click()}
+            disabled={uploadingAvatar}
+            style={{
+              padding: "8px 16px",
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.border}`,
+              backgroundColor: "transparent",
+              color: theme.colors.textSecondary,
+              cursor: "pointer",
+              fontSize: theme.fontSizes.sm,
+            }}
+          >
+            {uploadingAvatar ? "Lädt hoch..." : "📁 Bild hochladen"}
+          </button>
+          <button
+            onClick={() => setShowCamera(!showCamera)}
+            style={{
+              padding: "8px 16px",
+              borderRadius: theme.borderRadius.md,
+              border: `1px solid ${theme.colors.border}`,
+              backgroundColor: "transparent",
+              color: theme.colors.textSecondary,
+              cursor: "pointer",
+              fontSize: theme.fontSizes.sm,
+            }}
+          >
+            📷 Kamera
+          </button>
+        </div>
+        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+      </div>
+
+      {/* Kamera */}
+      {showCamera && (
+        <div style={{ marginBottom: theme.spacing.xl, borderRadius: theme.borderRadius.md, overflow: "hidden", border: `1px solid ${theme.colors.border}` }}>
+          <video ref={videoRef} autoPlay playsInline style={{ width: "100%", display: "block" }} />
+          <canvas ref={canvasRef} style={{ display: "none" }} />
+          <button
+            onClick={handleCapture}
+            style={{
+              width: "100%",
+              padding: theme.spacing.md,
+              backgroundColor: theme.colors.primary,
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              fontSize: theme.fontSizes.md,
+              fontWeight: theme.fontWeights.semibold,
+            }}
+          >
+            📸 Foto aufnehmen
+          </button>
+        </div>
+      )}
 
       {/* Username */}
       <div style={{ marginBottom: theme.spacing.lg }}>
