@@ -19,45 +19,42 @@ function Navbar() {
         <nav style={styles.nav}>
           <NavLink
             to="/"
-            style={({ isActive }) => ({
-              ...styles.link,
-              ...(isActive ? styles.active : null),
-            })}
+            style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : null) })}
             end
           >
             Home
           </NavLink>
 
           {user && (
-            <NavLink
-              to="/app"
-              style={({ isActive }) => ({
-                ...styles.link,
-                ...(isActive ? styles.active : null),
-              })}
-            >
-              Dashboard
-            </NavLink>
+            <>
+              <NavLink
+                to="/app"
+                style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : null) })}
+              >
+                Dashboard
+              </NavLink>
+
+              <NavLink
+                to="/match"
+                style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : null) })}
+              >
+                🎯 Match
+              </NavLink>
+            </>
           )}
 
           {!user ? (
             <>
               <NavLink
                 to="/login"
-                style={({ isActive }) => ({
-                  ...styles.link,
-                  ...(isActive ? styles.active : null),
-                })}
+                style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : null) })}
               >
                 Login
               </NavLink>
 
               <NavLink
                 to="/register"
-                style={({ isActive }) => ({
-                  ...styles.registerButton,
-                  ...(isActive ? styles.registerButtonActive : null),
-                })}
+                style={({ isActive }) => ({ ...styles.registerButton, ...(isActive ? styles.registerButtonActive : null) })}
               >
                 Registrieren
               </NavLink>
@@ -66,10 +63,7 @@ function Navbar() {
             <>
               <NavLink
                 to="/profile"
-                style={({ isActive }) => ({
-                  ...styles.link,
-                  ...(isActive ? styles.active : null),
-                })}
+                style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : null) })}
               >
                 👤 Profil
               </NavLink>

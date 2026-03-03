@@ -8,6 +8,8 @@ import Match from "./pages/Match.jsx";
 import MatchResult from "./pages/MatchResult.jsx";
 import RooDetail from "./pages/RooDetail.jsx";
 import Profile from "./pages/Profile.jsx";
+import PublicProfile from "./pages/PublicProfile.jsx";
+import Chat from "./pages/Chat.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
@@ -19,6 +21,7 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="match" element={<Match />} />
         <Route path="match/result" element={<MatchResult />} />
+        <Route path="profile/:id" element={<PublicProfile />} />
         <Route
           path="app"
           element={
@@ -40,6 +43,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="chat/:userId"
+          element={
+            <ProtectedRoute>
+              <Chat />
             </ProtectedRoute>
           }
         />
