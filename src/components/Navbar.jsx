@@ -24,6 +24,12 @@ function Navbar() {
           >
             Home
           </NavLink>
+          <NavLink
+            to="/listen"
+            style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.active : null) })}
+            > 
+            🎧 Sounds
+</NavLink>
 
           {user && (
             <>

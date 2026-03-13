@@ -35,6 +35,13 @@ export default function RooDetail() {
   const [chatInput, setChatInput] = useState("");
   const chatBottomRef = useRef(null);
 
+  const [publishing, setPublishing] = useState(false);
+  const [published, setPublished] = useState(false);
+  const [publishedTrack, setPublishedTrack] = useState(null);
+  const [selectedFileForPublish, setSelectedFileForPublish] = useState(null);
+  const [publishTitle, setPublishTitle] = useState("");
+  const [publishStep, setPublishStep] = useState(1);
+
   useEffect(() => {
     const fetchRoo = async () => {
       const { data, error } = await supabase
@@ -73,13 +80,26 @@ export default function RooDetail() {
       setMessages(data || []);
     };
 
+    const checkPublished = async () => {
+      const { data } = await supabase
+        .from("published_tracks")
+        .select("*, roo_files(file_name)")
+        .eq("roo_id", id)
+        .maybeSingle();
+      if (data) {
+        setPublished(true);
+        setPublishedTrack(data);
+        setPublishTitle(data.title);
+      }
+    };
+
     fetchRoo();
     fetchFiles();
     fetchComments();
     fetchMessages();
+    checkPublished();
   }, [id]);
 
-  // Realtime – Session Comments
   useEffect(() => {
     const channel = supabase
       .channel(`roo-comments:${id}`)
@@ -92,11 +112,9 @@ export default function RooDetail() {
         setComments(prev => [...prev, payload.new]);
       })
       .subscribe();
-
     return () => supabase.removeChannel(channel);
   }, [id]);
 
-  // Realtime – Chat
   useEffect(() => {
     const channel = supabase
       .channel(`roo-chat:${id}`)
@@ -109,7 +127,6 @@ export default function RooDetail() {
         setMessages(prev => [...prev, payload.new]);
       })
       .subscribe();
-
     return () => supabase.removeChannel(channel);
   }, [id]);
 
@@ -176,6 +193,47 @@ export default function RooDetail() {
     setUploading(false);
   };
 
+  const handlePublish = async () => {
+    if (!selectedFileForPublish || !publishTitle.trim()) return;
+    setPublishing(true);
+
+    const { data: track, error } = await supabase
+      .from("published_tracks")
+      .insert({
+        roo_id: id,
+        title: publishTitle.trim(),
+        genre: roo.genre,
+        file_url: selectedFileForPublish.file_url,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Fehler beim Veröffentlichen:", error.message);
+      setPublishing(false);
+      return;
+    }
+
+    await supabase.from("published_track_artists").insert({
+      track_id: track.id,
+      user_id: user.id,
+    });
+
+    setPublished(true);
+    setPublishedTrack(track);
+    setPublishing(false);
+  };
+
+  const handleUnpublish = async () => {
+    if (!confirm("Veröffentlichung wirklich zurückziehen?")) return;
+    await supabase.from("published_tracks").delete().eq("roo_id", id);
+    setPublished(false);
+    setPublishedTrack(null);
+    setSelectedFileForPublish(null);
+    setPublishTitle("");
+    setPublishStep(1);
+  };
+
   const handleSendComment = async () => {
     if (!commentInput.trim()) return;
     const content = commentInput.trim();
@@ -213,6 +271,8 @@ export default function RooDetail() {
     if (type === ".zip") return "📦";
     return "📄";
   };
+
+  const mp3Files = files.filter(f => f.file_type === ".mp3");
 
   if (loading) return (
     <div style={{ padding: "40px", color: theme.colors.textSecondary }}>Lädt...</div>
@@ -275,6 +335,236 @@ export default function RooDetail() {
         ))}
       </div>
 
+      {/* Veröffentlichen Block */}
+      {roo.status === "Fertig" && (
+        <div style={{
+          backgroundColor: published ? "rgba(34, 197, 94, 0.1)" : "rgba(245, 158, 11, 0.1)",
+          border: `1px solid ${published ? "#22c55e" : theme.colors.accent}`,
+          borderRadius: theme.borderRadius.md,
+          padding: theme.spacing.lg,
+          marginBottom: theme.spacing.xl,
+        }}>
+          {published ? (
+            <div>
+              <p style={{ color: "#22c55e", fontWeight: theme.fontWeights.semibold, marginBottom: theme.spacing.md }}>
+                ✓ Dieser Roo wurde veröffentlicht! 🎉
+              </p>
+              <div style={{
+                padding: "12px 14px",
+                borderRadius: theme.borderRadius.sm,
+                border: `1px solid ${theme.colors.accent}`,
+                backgroundColor: "rgba(245, 158, 11, 0.15)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: theme.spacing.sm,
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: theme.spacing.sm }}>
+                  <span style={{ fontSize: "24px" }}>🎵</span>
+                  <div>
+                    <p style={{ color: theme.colors.textPrimary, fontSize: theme.fontSizes.sm, fontWeight: theme.fontWeights.semibold, margin: 0 }}>
+                      {publishedTrack?.title || publishTitle}
+                    </p>
+                    <p style={{ color: theme.colors.textSecondary, fontSize: "12px", margin: 0 }}>
+                      {publishedTrack?.genre} · veröffentlicht
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleUnpublish}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid #ef444466`,
+                    backgroundColor: "transparent",
+                    color: "#ef4444",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    flexShrink: 0,
+                  }}
+                >
+                  Zurückziehen
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p style={{ color: theme.colors.accent, fontWeight: theme.fontWeights.semibold, marginBottom: theme.spacing.sm }}>
+                🎵 Roo veröffentlichen
+              </p>
+
+              {/* Schritt Anzeige */}
+              <div style={{ display: "flex", gap: theme.spacing.md, marginBottom: theme.spacing.lg }}>
+                {[1, 2].map(step => (
+                  <div key={step} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{
+                      width: "24px",
+                      height: "24px",
+                      borderRadius: "50%",
+                      backgroundColor: publishStep >= step ? theme.colors.accent : theme.colors.surface,
+                      border: `1px solid ${publishStep >= step ? theme.colors.accent : theme.colors.border}`,
+                      color: publishStep >= step ? "#fff" : theme.colors.textMuted,
+                      fontSize: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: theme.fontWeights.semibold,
+                    }}>
+                      {step}
+                    </div>
+                    <span style={{ color: publishStep >= step ? theme.colors.textPrimary : theme.colors.textMuted, fontSize: theme.fontSizes.sm }}>
+                      {step === 1 ? "Finale MP3 wählen" : "Song benennen"}
+                    </span>
+                    {step < 2 && <span style={{ color: theme.colors.textMuted, marginLeft: "4px" }}>→</span>}
+                  </div>
+                ))}
+              </div>
+
+              {/* Schritt 1 */}
+              {publishStep === 1 && (
+                <>
+                  <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.md }}>
+                    Welche MP3 ist die finale Version?
+                  </p>
+                  {mp3Files.length === 0 ? (
+                    <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
+                      Keine MP3 gefunden. Lade zuerst die finale Version hoch.
+                    </p>
+                  ) : (
+                    <>
+                      <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.sm, marginBottom: theme.spacing.md }}>
+                        {mp3Files.map(file => (
+                          <div
+                            key={file.id}
+                            onClick={() => setSelectedFileForPublish(file)}
+                            style={{
+                              padding: "12px 14px",
+                              borderRadius: theme.borderRadius.sm,
+                              border: `1px solid ${selectedFileForPublish?.id === file.id ? theme.colors.accent : theme.colors.border}`,
+                              backgroundColor: selectedFileForPublish?.id === file.id ? "rgba(245, 158, 11, 0.15)" : theme.colors.surface,
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: theme.spacing.sm,
+                            }}
+                          >
+                            <span style={{ fontSize: "20px" }}>🎵</span>
+                            <div>
+                              <p style={{ color: theme.colors.textPrimary, fontSize: theme.fontSizes.sm, fontWeight: theme.fontWeights.semibold, margin: 0 }}>
+                                {file.file_name}
+                              </p>
+                              <p style={{ color: theme.colors.textSecondary, fontSize: "12px", margin: 0 }}>
+                                {new Date(file.created_at).toLocaleDateString("de-DE")}
+                              </p>
+                            </div>
+                            {selectedFileForPublish?.id === file.id && (
+                              <span style={{ marginLeft: "auto", color: theme.colors.accent, fontSize: "18px" }}>✓</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setPublishStep(2)}
+                        disabled={!selectedFileForPublish}
+                        style={{
+                          width: "100%",
+                          padding: theme.spacing.md,
+                          backgroundColor: selectedFileForPublish ? theme.colors.accent : theme.colors.surface,
+                          color: selectedFileForPublish ? "#fff" : theme.colors.textMuted,
+                          border: "none",
+                          borderRadius: theme.borderRadius.md,
+                          fontSize: theme.fontSizes.md,
+                          fontWeight: theme.fontWeights.semibold,
+                          cursor: selectedFileForPublish ? "pointer" : "not-allowed",
+                        }}
+                      >
+                        Weiter →
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Schritt 2 */}
+              {publishStep === 2 && (
+                <>
+                  <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.md }}>
+                    Wie heißt der Song?
+                  </p>
+                  <div style={{
+                    padding: "10px 14px",
+                    borderRadius: theme.borderRadius.sm,
+                    border: `1px solid ${theme.colors.accent}`,
+                    backgroundColor: "rgba(245, 158, 11, 0.15)",
+                    marginBottom: theme.spacing.md,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: theme.spacing.sm,
+                  }}>
+                    <span>🎵</span>
+                    <span style={{ color: theme.colors.textPrimary, fontSize: theme.fontSizes.sm, fontWeight: theme.fontWeights.semibold }}>
+                      {selectedFileForPublish?.file_name}
+                    </span>
+                  </div>
+                  <input
+                    value={publishTitle}
+                    onChange={e => setPublishTitle(e.target.value)}
+                    placeholder="Song-Titel eingeben..."
+                    style={{
+                      width: "100%",
+                      padding: "12px 16px",
+                      backgroundColor: theme.colors.surface,
+                      border: `1px solid ${publishTitle.trim() ? theme.colors.accent : theme.colors.border}`,
+                      borderRadius: theme.borderRadius.md,
+                      color: theme.colors.textPrimary,
+                      fontSize: theme.fontSizes.md,
+                      outline: "none",
+                      marginBottom: theme.spacing.md,
+                      boxSizing: "border-box",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: theme.spacing.sm }}>
+                    <button
+                      onClick={() => setPublishStep(1)}
+                      style={{
+                        flex: 1,
+                        padding: theme.spacing.md,
+                        backgroundColor: "transparent",
+                        color: theme.colors.textSecondary,
+                        border: `1px solid ${theme.colors.border}`,
+                        borderRadius: theme.borderRadius.md,
+                        fontSize: theme.fontSizes.md,
+                        cursor: "pointer",
+                      }}
+                    >
+                      ← Zurück
+                    </button>
+                    <button
+                      onClick={handlePublish}
+                      disabled={publishing || !publishTitle.trim()}
+                      style={{
+                        flex: 2,
+                        padding: theme.spacing.md,
+                        backgroundColor: publishTitle.trim() ? theme.colors.accent : theme.colors.surface,
+                        color: publishTitle.trim() ? "#fff" : theme.colors.textMuted,
+                        border: "none",
+                        borderRadius: theme.borderRadius.md,
+                        fontSize: theme.fontSizes.md,
+                        fontWeight: theme.fontWeights.semibold,
+                        cursor: publishTitle.trim() ? "pointer" : "not-allowed",
+                      }}
+                    >
+                      {publishing ? "Wird veröffentlicht..." : "🚀 Jetzt veröffentlichen"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Tabs */}
       <div style={{ display: "flex", gap: "2px", marginBottom: theme.spacing.xl, backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, padding: "4px" }}>
         {["session", "chat"].map(tab => (
           <button

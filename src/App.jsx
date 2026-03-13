@@ -11,6 +11,7 @@ import Profile from "./pages/Profile.jsx";
 import PublicProfile from "./pages/PublicProfile.jsx";
 import Chat from "./pages/Chat.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import Listener from "./pages/Listener.jsx";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="match" element={<Match />} />
         <Route path="match/result" element={<MatchResult />} />
         <Route path="profile/:id" element={<PublicProfile />} />
+        <Route path="listen" element={<Listener />} />
         <Route
           path="app"
           element={

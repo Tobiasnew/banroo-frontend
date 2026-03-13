@@ -5,27 +5,30 @@ import { theme } from "../styles/theme";
 
 const instruments = ["Gitarre", "Bass", "Schlagzeug", "Klavier", "Gesang", "Produktion", "DJ", "Sonstiges"];
 const genres = ["Pop", "Rock", "Hip-Hop", "Electronic", "Jazz", "R&B", "Metal", "Indie"];
-const goals = ["Start a Roo", "Just vibe", "Find my Band", "Drop a Release"];
 
 function Match() {
-  const [selected, setSelected] = useState({ instrument: null, genre: null, goal: null });
+  const [selected, setSelected] = useState({ instrument: null, genre: null });
   const navigate = useNavigate();
 
   const toggle = (category, value) => {
     setSelected(prev => ({ ...prev, [category]: prev[category] === value ? null : value }));
   };
 
-  const allSelected = selected.instrument && selected.genre && selected.goal;
+  const allSelected = selected.instrument && selected.genre;
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: theme.colors.background, padding: theme.spacing.xl }}>
       <div style={{ maxWidth: "600px", margin: "0 auto" }}>
 
+        <p style={{ color: theme.colors.primary, fontWeight: theme.fontWeights.semibold, marginBottom: theme.spacing.sm, fontSize: theme.fontSizes.sm, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          ♩♪ Start a Roo
+        </p>
+
         <h1 style={{ color: theme.colors.textPrimary, fontSize: theme.fontSizes.xxl, fontWeight: theme.fontWeights.bold, marginBottom: theme.spacing.sm }}>
           Find deinen Match
         </h1>
         <p style={{ color: theme.colors.textSecondary, marginBottom: theme.spacing.xl }}>
-          Wähle dein Instrument, Genre und Ziel – wir finden den passenden Partner.
+          Wähle dein Instrument und Genre – wir finden den passenden Partner.
         </p>
 
         {/* Instrument */}
@@ -52,28 +55,10 @@ function Match() {
           ))}
         </div>
 
-        {/* Goal */}
-        <h2 style={{ color: theme.colors.textPrimary, fontSize: theme.fontSizes.md, fontWeight: theme.fontWeights.semibold, marginBottom: theme.spacing.md }}>
-          🎯 Ziel
-        </h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: theme.spacing.sm, marginBottom: theme.spacing.xl }}>
-          {goals.map(g => (
-            <button
-              key={g}
-              onClick={() => toggle("goal", g)}
-              style={
-                g === "Start a Roo"
-                  ? selected.goal === g ? chip.featuredActive : chip.featured
-                  : selected.goal === g ? chip.active : chip.default
-              }
-            >
-            {g === "Start a Roo" ? "♩♪ " + g : g}            </button>
-          ))}
-        </div>
-
         <button
           disabled={!allSelected}
-            onClick={() => navigate("/match/result", { state: selected })}          style={{
+          onClick={() => navigate("/match/result", { state: { ...selected, goal: "Start a Roo" } })}
+          style={{
             width: "100%",
             padding: theme.spacing.md,
             backgroundColor: allSelected ? theme.colors.primary : theme.colors.surface,
@@ -86,7 +71,7 @@ function Match() {
             transition: "all 0.2s",
           }}
         >
-          {allSelected ? "Match finden →" : "Bitte alles auswählen"}
+          {allSelected ? "♩♪ Start a Roo →" : "Wähle Instrument und Genre"}
         </button>
 
       </div>
@@ -112,26 +97,6 @@ const chip = {
     color: "#ffffff",
     cursor: "pointer",
     fontSize: "14px",
-  },
-  featured: {
-    padding: "8px 16px",
-    borderRadius: "999px",
-    border: "1px solid rgba(245, 158, 11, 0.6)",
-    backgroundColor: "rgba(245, 158, 11, 0.15)",
-    color: "#F59E0B",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-  featuredActive: {
-    padding: "8px 16px",
-    borderRadius: "999px",
-    border: "1px solid rgba(245, 158, 11, 1)",
-    backgroundColor: "rgba(245, 158, 11, 0.3)",
-    color: "#ffffff",
-    cursor: "pointer",
-    fontSize: "14px",
-    fontWeight: "600",
   },
 };
 
