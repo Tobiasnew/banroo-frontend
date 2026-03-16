@@ -48,3 +48,11 @@ button {
   font-family: inherit;
   cursor: pointer;
 }
+/* Hamburger nur auf Mobile zeigen, Desktop-Nav auf Mobile verstecken */
+@media (min-width: 769px) {
+  .mobile-only { display: none !important; }
+}
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: flex !important; }
+}

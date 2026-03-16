@@ -13,6 +13,7 @@ function MatchResult() {
 
   const [match, setMatch] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     const findMatch = async () => {
@@ -51,19 +52,47 @@ function MatchResult() {
   }, []);
 
   const handleStartRoo = async () => {
-    const { error } = await supabase.from("roos").insert({
-      user_id: user.id,
-      title: `${selected.genre || "Neuer"} Roo`,
-      genre: selected.genre || "Unbekannt",
-      status: "Idee",
-    });
+    if (!match) return;
+    setStarting(true);
+
+    // 1. Roo erstellen MIT partner_id
+    const { data: newRoo, error } = await supabase
+      .from("roos")
+      .insert({
+        user_id: user.id,
+        partner_id: match.id,
+        title: `${selected.genre || "Neuer"} Roo`,
+        genre: selected.genre || "Unbekannt",
+        status: "Idee",
+      })
+      .select()
+      .single();
 
     if (error) {
-      console.error("Fehler beim Speichern:", error.message);
+      console.error("Fehler beim Erstellen:", error.message);
+      setStarting(false);
       return;
     }
 
-    navigate("/app");
+    // 2. Conversation erstellen (falls noch keine existiert)
+    const user1 = user.id < match.id ? user.id : match.id;
+    const user2 = user.id < match.id ? match.id : user.id;
+
+    const { data: existingConv } = await supabase
+      .from("conversations")
+      .select("id")
+      .eq("user1_id", user1)
+      .eq("user2_id", user2)
+      .maybeSingle();
+
+    if (!existingConv) {
+      await supabase
+        .from("conversations")
+        .insert({ user1_id: user1, user2_id: user2 });
+    }
+
+    // 3. Direkt zum neuen Roo navigieren
+    navigate(`/roo/${newRoo.id}`);
   };
 
   const avatarUrl = match?.avatar_url || null;
@@ -190,20 +219,20 @@ function MatchResult() {
 
           <button
             onClick={handleStartRoo}
-            disabled={loading || !match}
+            disabled={loading || !match || starting}
             style={{
               flex: 1,
               padding: theme.spacing.md,
-              backgroundColor: !loading && match ? theme.colors.primary : theme.colors.surface,
-              color: !loading && match ? "#fff" : theme.colors.textMuted,
+              backgroundColor: !loading && match && !starting ? theme.colors.primary : theme.colors.surface,
+              color: !loading && match && !starting ? "#fff" : theme.colors.textMuted,
               border: "none",
               borderRadius: theme.borderRadius.md,
               fontSize: theme.fontSizes.md,
               fontWeight: theme.fontWeights.semibold,
-              cursor: !loading && match ? "pointer" : "not-allowed",
+              cursor: !loading && match && !starting ? "pointer" : "not-allowed",
             }}
           >
-            Roo starten 🎵
+            {starting ? "Wird erstellt..." : "Roo starten 🎵"}
           </button>
         </div>
 
