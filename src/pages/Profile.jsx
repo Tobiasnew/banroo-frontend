@@ -6,7 +6,8 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
 
 const instrumentOptions = ["Gitarre", "Bass", "Schlagzeug", "Klavier", "Gesang", "Produktion", "DJ", "Sonstiges"];
-const genreOptions = ["Pop", "Rock", "Hip-Hop", "Electronic", "Jazz", "R&B", "Metal", "Indie"];
+const genreOptions = ["Pop", "Rock", "Hip-Hop", "Electronic", "Jazz", "R&B", "Metal", "Indie", "Classical", "Reggae"];
+const experienceOptions = ["Anfänger", "Fortgeschritten", "Profi"];
 
 export default function Profile() {
   const { user } = useAuth();
@@ -25,6 +26,12 @@ export default function Profile() {
     bio: "",
     instrument: null,
     genre: null,
+    instruments: [],
+    genres: [],
+    experience: null,
+    instagram: "",
+    spotify: "",
+    soundcloud: "",
     avatar_url: null,
   });
 
@@ -36,7 +43,21 @@ export default function Profile() {
         .eq("id", user.id)
         .maybeSingle();
 
-      if (data) setProfile(data);
+      if (data) {
+        setProfile({
+          username: data.username || "",
+          bio: data.bio || "",
+          instrument: data.instrument || null,
+          genre: data.genre || null,
+          instruments: data.instruments || [],
+          genres: data.genres || [],
+          experience: data.experience || null,
+          instagram: data.instagram || "",
+          spotify: data.spotify || "",
+          soundcloud: data.soundcloud || "",
+          avatar_url: data.avatar_url || null,
+        });
+      }
       setLoading(false);
     };
 
@@ -98,6 +119,24 @@ export default function Profile() {
     }, "image/jpeg");
   };
 
+  const toggleInstrument = (inst) => {
+    setProfile(p => ({
+      ...p,
+      instruments: p.instruments.includes(inst)
+        ? p.instruments.filter(i => i !== inst)
+        : [...p.instruments, inst],
+    }));
+  };
+
+  const toggleGenre = (genre) => {
+    setProfile(p => ({
+      ...p,
+      genres: p.genres.includes(genre)
+        ? p.genres.filter(g => g !== genre)
+        : [...p.genres, genre],
+    }));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const { error } = await supabase
@@ -106,8 +145,14 @@ export default function Profile() {
         id: user.id,
         username: profile.username,
         bio: profile.bio,
-        instrument: profile.instrument,
-        genre: profile.genre,
+        instrument: profile.instruments[0] || profile.instrument,
+        genre: profile.genres[0] || profile.genre,
+        instruments: profile.instruments,
+        genres: profile.genres,
+        experience: profile.experience,
+        instagram: profile.instagram,
+        spotify: profile.spotify,
+        soundcloud: profile.soundcloud,
         avatar_url: profile.avatar_url,
       });
 
@@ -123,216 +168,344 @@ export default function Profile() {
   );
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "40px 20px" }}>
+    <div style={{ maxWidth: "640px", margin: "0 auto", padding: "40px 20px 80px" }}>
 
-      <button
-        onClick={() => navigate("/app")}
-        style={{ background: "none", border: "none", color: theme.colors.textSecondary, cursor: "pointer", fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.xl, padding: 0 }}
-      >
-        ← Zurück
-      </button>
+      {/* Header */}
+      <div style={{ marginBottom: "40px" }}>
+        <button
+          onClick={() => navigate("/app")}
+          style={{ background: "none", border: "none", color: theme.colors.textSecondary, cursor: "pointer", fontSize: theme.fontSizes.sm, marginBottom: "24px", padding: 0 }}
+        >
+          ← Zurück zum Dashboard
+        </button>
+        <h1 style={{ color: theme.colors.textPrimary, fontSize: "clamp(1.8rem, 4vw, 2.4rem)", fontWeight: theme.fontWeights.bold, marginBottom: "8px" }}>
+          Dein Profil
+        </h1>
+        <p style={{ color: theme.colors.textMuted, fontSize: theme.fontSizes.sm }}>
+          {user?.email}
+        </p>
+      </div>
 
-      <h1 style={{ color: theme.colors.textPrimary, fontSize: theme.fontSizes.xxl, fontWeight: theme.fontWeights.bold, marginBottom: theme.spacing.sm }}>
-        Dein Profil
-      </h1>
-      <p style={{ color: theme.colors.textSecondary, marginBottom: theme.spacing.xl }}>
-        {user?.email}
-      </p>
-
-      {/* Avatar */}
-      <div style={{ display: "flex", alignItems: "center", gap: theme.spacing.lg, marginBottom: theme.spacing.xl }}>
+      {/* Avatar Section */}
+      <div style={{
+        backgroundColor: theme.colors.surface,
+        border: "1px solid " + theme.colors.border,
+        borderRadius: theme.borderRadius.lg,
+        padding: "32px",
+        marginBottom: "24px",
+        textAlign: "center",
+      }}>
         <div style={{
-          width: "80px",
-          height: "80px",
+          width: "100px",
+          height: "100px",
           borderRadius: "50%",
-          backgroundColor: theme.colors.surface,
-          border: `2px solid ${theme.colors.border}`,
+          backgroundColor: theme.colors.background,
+          border: "3px solid " + theme.colors.primary,
           overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "32px",
+          fontSize: "40px",
+          margin: "0 auto 20px",
         }}>
           {profile.avatar_url
             ? <img src={profile.avatar_url} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : "👤"
+            : "🎵"
           }
         </div>
-        <div style={{ display: "flex", gap: theme.spacing.sm }}>
-          <button
-            onClick={() => fileInputRef.current.click()}
-            disabled={uploadingAvatar}
-            style={{
-              padding: "8px 16px",
-              borderRadius: theme.borderRadius.md,
-              border: `1px solid ${theme.colors.border}`,
-              backgroundColor: "transparent",
-              color: theme.colors.textSecondary,
-              cursor: "pointer",
-              fontSize: theme.fontSizes.sm,
-            }}
-          >
-            {uploadingAvatar ? "Lädt hoch..." : "📁 Bild hochladen"}
-          </button>
-          <button
-            onClick={() => setShowCamera(!showCamera)}
-            style={{
-              padding: "8px 16px",
-              borderRadius: theme.borderRadius.md,
-              border: `1px solid ${theme.colors.border}`,
-              backgroundColor: "transparent",
-              color: theme.colors.textSecondary,
-              cursor: "pointer",
-              fontSize: theme.fontSizes.sm,
-            }}
-          >
-            📷 Kamera
-          </button>
-        </div>
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
-      </div>
 
-      {/* Kamera */}
-      {showCamera && (
-        <div style={{ marginBottom: theme.spacing.xl, borderRadius: theme.borderRadius.md, overflow: "hidden", border: `1px solid ${theme.colors.border}` }}>
-          <video ref={videoRef} autoPlay playsInline style={{ width: "100%", display: "block" }} />
-          <canvas ref={canvasRef} style={{ display: "none" }} />
-          <button
-            onClick={handleCapture}
-            style={{
-              width: "100%",
-              padding: theme.spacing.md,
-              backgroundColor: theme.colors.primary,
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              fontSize: theme.fontSizes.md,
-              fontWeight: theme.fontWeights.semibold,
-            }}
-          >
-            📸 Foto aufnehmen
-          </button>
-        </div>
-      )}
-
-      {/* Username */}
-      <div style={{ marginBottom: theme.spacing.lg }}>
-        <label style={{ display: "block", color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.sm }}>
-          Name
-        </label>
-        <input
-          value={profile.username || ""}
-          onChange={e => setProfile(p => ({ ...p, username: e.target.value }))}
-          placeholder="Dein Name oder Artist-Name"
-          style={{
-            width: "100%",
-            padding: theme.spacing.md,
-            backgroundColor: theme.colors.surface,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            color: theme.colors.textPrimary,
-            fontSize: theme.fontSizes.md,
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-
-      {/* Bio */}
-      <div style={{ marginBottom: theme.spacing.lg }}>
-        <label style={{ display: "block", color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.sm }}>
-          Bio
-        </label>
-        <textarea
-          value={profile.bio || ""}
-          onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))}
-          placeholder="Erzähl uns von dir..."
-          rows={4}
-          style={{
-            width: "100%",
-            padding: theme.spacing.md,
-            backgroundColor: theme.colors.surface,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            color: theme.colors.textPrimary,
-            fontSize: theme.fontSizes.md,
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
-        />
-      </div>
-
-      {/* Instrument */}
-      <div style={{ marginBottom: theme.spacing.lg }}>
-        <label style={{ display: "block", color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.sm }}>
-          Instrument
-        </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: theme.spacing.sm }}>
-          {instrumentOptions.map(i => (
-            <button
-              key={i}
-              onClick={() => setProfile(p => ({ ...p, instrument: p.instrument === i ? null : i }))}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "999px",
-                border: `1px solid ${profile.instrument === i ? theme.colors.primary : theme.colors.border}`,
-                backgroundColor: profile.instrument === i ? `${theme.colors.primary}22` : "transparent",
-                color: profile.instrument === i ? "#fff" : theme.colors.textSecondary,
-                cursor: "pointer",
-                fontSize: theme.fontSizes.sm,
-              }}
-            >
-              {i}
+        {showCamera ? (
+          <div style={{ marginBottom: "16px" }}>
+            <video ref={videoRef} autoPlay playsInline style={{ width: "100%", maxWidth: "300px", borderRadius: theme.borderRadius.md, marginBottom: "12px" }} />
+            <canvas ref={canvasRef} style={{ display: "none" }} />
+            <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+              <button onClick={handleCapture} style={styles.smallButton}>
+                📸 Aufnehmen
+              </button>
+              <button onClick={() => setShowCamera(false)} style={{ ...styles.smallButton, backgroundColor: "transparent", border: "1px solid " + theme.colors.border, color: theme.colors.textSecondary }}>
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: "8px", justifyContent: "center", flexWrap: "wrap" }}>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: "none" }} />
+            <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} style={styles.smallButton}>
+              {uploadingAvatar ? "Lädt..." : "📁 Foto hochladen"}
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Genre */}
-      <div style={{ marginBottom: theme.spacing.xl }}>
-        <label style={{ display: "block", color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm, marginBottom: theme.spacing.sm }}>
-          Genre
-        </label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: theme.spacing.sm }}>
-          {genreOptions.map(g => (
-            <button
-              key={g}
-              onClick={() => setProfile(p => ({ ...p, genre: p.genre === g ? null : g }))}
-              style={{
-                padding: "8px 16px",
-                borderRadius: "999px",
-                border: `1px solid ${profile.genre === g ? theme.colors.primary : theme.colors.border}`,
-                backgroundColor: profile.genre === g ? `${theme.colors.primary}22` : "transparent",
-                color: profile.genre === g ? "#fff" : theme.colors.textSecondary,
-                cursor: "pointer",
-                fontSize: theme.fontSizes.sm,
-              }}
-            >
-              {g}
+            <button onClick={() => setShowCamera(true)} style={styles.smallButton}>
+              📸 Kamera
             </button>
-          ))}
+          </div>
+        )}
+      </div>
+
+      {/* Persönliche Infos */}
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>Persönliche Infos</h2>
+
+        {/* Username */}
+        <div style={styles.field}>
+          <label style={styles.label}>Artist-Name</label>
+          <input
+            value={profile.username || ""}
+            onChange={e => setProfile(p => ({ ...p, username: e.target.value }))}
+            placeholder="Dein Name oder Künstlername"
+            style={styles.input}
+          />
+        </div>
+
+        {/* Bio */}
+        <div style={styles.field}>
+          <label style={styles.label}>Über dich</label>
+          <textarea
+            value={profile.bio || ""}
+            onChange={e => setProfile(p => ({ ...p, bio: e.target.value }))}
+            placeholder="Erzähl kurz was über dich und deine Musik..."
+            rows={3}
+            style={{ ...styles.input, resize: "vertical" }}
+          />
+        </div>
+
+        {/* Experience */}
+        <div style={styles.field}>
+          <label style={styles.label}>Erfahrung</label>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {experienceOptions.map(exp => (
+              <button
+                key={exp}
+                onClick={() => setProfile(p => ({ ...p, experience: p.experience === exp ? null : exp }))}
+                style={{
+                  ...styles.chip,
+                  borderColor: profile.experience === exp ? theme.colors.accent : theme.colors.border,
+                  backgroundColor: profile.experience === exp ? theme.colors.accent + "22" : "transparent",
+                  color: profile.experience === exp ? theme.colors.accent : theme.colors.textSecondary,
+                }}
+              >
+                {exp}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Save */}
+      {/* Musik */}
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>Deine Musik</h2>
+
+        {/* Instruments (Multi-Select) */}
+        <div style={styles.field}>
+          <label style={styles.label}>Instrumente <span style={{ color: theme.colors.textMuted, fontWeight: "normal" }}>(mehrere möglich)</span></label>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {instrumentOptions.map(inst => (
+              <button
+                key={inst}
+                onClick={() => toggleInstrument(inst)}
+                style={{
+                  ...styles.chip,
+                  borderColor: profile.instruments.includes(inst) ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: profile.instruments.includes(inst) ? theme.colors.primary + "22" : "transparent",
+                  color: profile.instruments.includes(inst) ? "#fff" : theme.colors.textSecondary,
+                }}
+              >
+                {inst}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Genres (Multi-Select) */}
+        <div style={styles.field}>
+          <label style={styles.label}>Genres <span style={{ color: theme.colors.textMuted, fontWeight: "normal" }}>(mehrere möglich)</span></label>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            {genreOptions.map(genre => (
+              <button
+                key={genre}
+                onClick={() => toggleGenre(genre)}
+                style={{
+                  ...styles.chip,
+                  borderColor: profile.genres.includes(genre) ? theme.colors.primary : theme.colors.border,
+                  backgroundColor: profile.genres.includes(genre) ? theme.colors.primary + "22" : "transparent",
+                  color: profile.genres.includes(genre) ? "#fff" : theme.colors.textSecondary,
+                }}
+              >
+                {genre}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Social Links */}
+      <div style={styles.card}>
+        <h2 style={styles.sectionTitle}>Social Links</h2>
+        <p style={{ color: theme.colors.textMuted, fontSize: theme.fontSizes.sm, marginBottom: "20px" }}>
+          Trag deinen Benutzernamen ein – die Links werden automatisch gebaut.
+        </p>
+
+        <div style={styles.field}>
+          <label style={styles.label}>Instagram</label>
+          <div style={styles.socialRow}>
+            <span style={styles.socialPrefix}>instagram.com/</span>
+            <input
+              value={profile.instagram || ""}
+              onChange={e => setProfile(p => ({ ...p, instagram: e.target.value }))}
+              placeholder="dein_name"
+              style={styles.socialInput}
+            />
+          </div>
+        </div>
+
+        <div style={styles.field}>
+          <label style={styles.label}>Spotify</label>
+          <div style={styles.socialRow}>
+            <span style={styles.socialPrefix}>open.spotify.com/artist/</span>
+            <input
+              value={profile.spotify || ""}
+              onChange={e => setProfile(p => ({ ...p, spotify: e.target.value }))}
+              placeholder="artist-id"
+              style={styles.socialInput}
+            />
+          </div>
+        </div>
+
+        <div style={styles.field}>
+          <label style={styles.label}>SoundCloud</label>
+          <div style={styles.socialRow}>
+            <span style={styles.socialPrefix}>soundcloud.com/</span>
+            <input
+              value={profile.soundcloud || ""}
+              onChange={e => setProfile(p => ({ ...p, soundcloud: e.target.value }))}
+              placeholder="dein_name"
+              style={styles.socialInput}
+            />
+          </div>
+        </div>
+      </div>
+      {/* Preview Button */}
+      <button
+        onClick={() => navigate(`/profile/${user.id}`)}
+        style={{
+          width: "100%",
+          padding: "16px",
+          backgroundColor: "transparent",
+          color: theme.colors.textSecondary,
+          border: "1px solid " + theme.colors.border,
+          borderRadius: theme.borderRadius.md,
+          fontSize: theme.fontSizes.md,
+          cursor: "pointer",
+          marginBottom: "12px",
+          transition: "border-color 0.2s",
+        }}
+        onMouseEnter={e => e.target.style.borderColor = theme.colors.primary}
+        onMouseLeave={e => e.target.style.borderColor = theme.colors.border}
+      >
+        👁️ So sehen andere dein Profil
+      </button>
+      {/* Save Button */}
       <button
         onClick={handleSave}
         disabled={saving}
         style={{
           width: "100%",
-          padding: theme.spacing.md,
-          backgroundColor: saved ? "#22c55e" : theme.colors.primary,
+          padding: "18px",
+          backgroundColor: saved ? theme.colors.success : theme.colors.primary,
           color: "#fff",
           border: "none",
           borderRadius: theme.borderRadius.md,
-          fontSize: theme.fontSizes.md,
+          fontSize: "1.1rem",
           fontWeight: theme.fontWeights.semibold,
-          cursor: "pointer",
-          transition: "background-color 0.3s",
+          cursor: saving ? "not-allowed" : "pointer",
+          transition: "all 0.3s ease",
+          boxShadow: "0 4px 20px rgba(139, 92, 246, 0.25)",
         }}
       >
-        {saved ? "✓ Gespeichert" : saving ? "Speichert..." : "Profil speichern"}
+        {saved ? "✓ Gespeichert!" : saving ? "Speichert..." : "Profil speichern"}
       </button>
 
     </div>
   );
 }
+
+const styles = {
+  card: {
+    backgroundColor: theme.colors.surface,
+    border: "1px solid " + theme.colors.border,
+    borderRadius: theme.borderRadius.lg,
+    padding: "32px",
+    marginBottom: "24px",
+  },
+  sectionTitle: {
+    color: theme.colors.textPrimary,
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeights.semibold,
+    marginBottom: "24px",
+    paddingBottom: "12px",
+    borderBottom: "1px solid " + theme.colors.border,
+  },
+  field: {
+    marginBottom: "20px",
+  },
+  label: {
+    display: "block",
+    color: theme.colors.textSecondary,
+    fontSize: theme.fontSizes.sm,
+    fontWeight: theme.fontWeights.medium,
+    marginBottom: "8px",
+  },
+  input: {
+    width: "100%",
+    padding: "14px 16px",
+    backgroundColor: theme.colors.background,
+    border: "1px solid " + theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    color: theme.colors.textPrimary,
+    fontSize: theme.fontSizes.md,
+    boxSizing: "border-box",
+    outline: "none",
+  },
+  chip: {
+    padding: "8px 16px",
+    borderRadius: "999px",
+    border: "1px solid " + theme.colors.border,
+    backgroundColor: "transparent",
+    cursor: "pointer",
+    fontSize: theme.fontSizes.sm,
+    transition: "all 0.15s ease",
+  },
+  smallButton: {
+    padding: "10px 20px",
+    backgroundColor: theme.colors.primary,
+    color: "#fff",
+    border: "none",
+    borderRadius: theme.borderRadius.md,
+    fontSize: theme.fontSizes.sm,
+    fontWeight: theme.fontWeights.semibold,
+    cursor: "pointer",
+  },
+  socialRow: {
+    display: "flex",
+    alignItems: "center",
+    backgroundColor: theme.colors.background,
+    border: "1px solid " + theme.colors.border,
+    borderRadius: theme.borderRadius.md,
+    overflow: "hidden",
+  },
+  socialPrefix: {
+    padding: "14px 12px",
+    color: theme.colors.textMuted,
+    fontSize: theme.fontSizes.sm,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRight: "1px solid " + theme.colors.border,
+    whiteSpace: "nowrap",
+  },
+  socialInput: {
+    flex: 1,
+    padding: "14px 12px",
+    backgroundColor: "transparent",
+    border: "none",
+    color: theme.colors.textPrimary,
+    fontSize: theme.fontSizes.md,
+    outline: "none",
+  },
+};
