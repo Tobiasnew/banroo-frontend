@@ -27,7 +27,25 @@ export default function Dashboard() {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (!error) setRoos(data);
+      if (error) {
+        setLoading(false);
+        return;
+      }
+
+      // Partner-Profile für jeden Roo laden
+      const enriched = await Promise.all((data || []).map(async (roo) => {
+        if (!roo.partner_id) return { ...roo, partner: null };
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id, username, avatar_url, instrument")
+          .eq("id", roo.partner_id)
+          .maybeSingle();
+
+        return { ...roo, partner: profile };
+      }));
+
+      setRoos(enriched);
       setLoading(false);
     };
 
@@ -43,16 +61,15 @@ export default function Dashboard() {
         return;
       }
 
-      // Partner-Profile laden
       const enriched = await Promise.all((data || []).map(async (conv) => {
-        const partnerId = conv.user1_id === user.id ? conv.user2_id : conv.user1_id;
+        const partnerId = conv.user1_id === user.id
+          ? conv.user2_id : conv.user1_id;
         const { data: profile } = await supabase
           .from("profiles")
           .select("id, username, avatar_url, instrument, genre")
           .eq("id", partnerId)
           .maybeSingle();
 
-        // Letzte Nachricht laden
         const { data: lastMsg } = await supabase
           .from("messages")
           .select("content, created_at")
@@ -135,7 +152,21 @@ export default function Dashboard() {
         loading ? (
           <p style={{ color: theme.colors.textSecondary }}>Lädt...</p>
         ) : roos.length === 0 ? (
-          <p style={{ color: theme.colors.textSecondary }}>Noch keine Roos. Starte deinen ersten!</p>
+          <div style={{
+            textAlign: "center",
+            padding: theme.spacing.xl,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.md,
+            border: `1px solid ${theme.colors.border}`,
+          }}>
+            <p style={{ fontSize: "40px", marginBottom: theme.spacing.md }}>🎵</p>
+            <p style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, marginBottom: theme.spacing.sm }}>
+              Noch keine Roos
+            </p>
+            <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
+              Starte deinen ersten Roo und finde einen Partner!
+            </p>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.md }}>
             {roos.map(roo => (
@@ -147,34 +178,66 @@ export default function Dashboard() {
                   border: `1px solid ${theme.colors.border}`,
                   borderRadius: theme.borderRadius.md,
                   padding: theme.spacing.lg,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
                   cursor: "pointer",
                   transition: "border-color 0.2s",
                 }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = theme.colors.primary}
                 onMouseLeave={e => e.currentTarget.style.borderColor = theme.colors.border}
               >
-                <div>
-                  <h3 style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, marginBottom: "4px" }}>
+                {/* Obere Zeile: Titel + Status */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <h3 style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, margin: 0 }}>
                     {roo.title}
                   </h3>
-                  <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
-                    {roo.genre} · {new Date(roo.created_at).toLocaleDateString("de-DE")}
-                  </p>
+                  <span style={{
+                    padding: "4px 12px",
+                    borderRadius: "999px",
+                    backgroundColor: `${statusColor[roo.status] ?? theme.colors.primary}22`,
+                    border: `1px solid ${statusColor[roo.status] ?? theme.colors.primary}`,
+                    color: statusColor[roo.status] ?? theme.colors.primary,
+                    fontSize: "12px",
+                    fontWeight: theme.fontWeights.medium,
+                    flexShrink: 0,
+                  }}>
+                    {roo.status}
+                  </span>
                 </div>
-                <span style={{
-                  padding: "6px 14px",
-                  borderRadius: "999px",
-                  backgroundColor: `${statusColor[roo.status] ?? theme.colors.primary}22`,
-                  border: `1px solid ${statusColor[roo.status] ?? theme.colors.primary}`,
-                  color: statusColor[roo.status] ?? theme.colors.primary,
-                  fontSize: theme.fontSizes.sm,
-                  fontWeight: theme.fontWeights.medium,
-                }}>
-                  {roo.status}
-                </span>
+
+                {/* Untere Zeile: Partner + Meta */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  {roo.partner ? (
+                    <>
+                      <div style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        backgroundColor: "rgba(124, 58, 237, 0.2)",
+                        border: `1.5px solid ${theme.colors.primary}`,
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "13px",
+                        flexShrink: 0,
+                      }}>
+                        {roo.partner.avatar_url
+                          ? <img src={roo.partner.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          : "🎵"
+                        }
+                      </div>
+                      <span style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
+                        mit <span style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.medium }}>{roo.partner.username || "Unbekannt"}</span>
+                      </span>
+                    </>
+                  ) : (
+                    <span style={{ color: theme.colors.textMuted, fontSize: theme.fontSizes.sm }}>
+                      Solo
+                    </span>
+                  )}
+                  <span style={{ color: theme.colors.textMuted, fontSize: "12px", marginLeft: "auto" }}>
+                    {roo.genre} · {new Date(roo.created_at).toLocaleDateString("de-DE")}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
@@ -186,7 +249,21 @@ export default function Dashboard() {
         loadingChats ? (
           <p style={{ color: theme.colors.textSecondary }}>Lädt...</p>
         ) : conversations.length === 0 ? (
-          <p style={{ color: theme.colors.textSecondary }}>Noch keine Chats. Match jemanden und schreib ihm!</p>
+          <div style={{
+            textAlign: "center",
+            padding: theme.spacing.xl,
+            backgroundColor: theme.colors.surface,
+            borderRadius: theme.borderRadius.md,
+            border: `1px solid ${theme.colors.border}`,
+          }}>
+            <p style={{ fontSize: "40px", marginBottom: theme.spacing.md }}>💬</p>
+            <p style={{ color: theme.colors.textPrimary, fontWeight: theme.fontWeights.semibold, marginBottom: theme.spacing.sm }}>
+              Noch keine Chats
+            </p>
+            <p style={{ color: theme.colors.textSecondary, fontSize: theme.fontSizes.sm }}>
+              Match jemanden und schreib ihm!
+            </p>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: theme.spacing.md }}>
             {conversations.map(conv => (
@@ -234,7 +311,7 @@ export default function Dashboard() {
                   </p>
                 </div>
                 {conv.lastMessage && (
-                  <p style={{ color: theme.colors.textMuted, fontSize: "12px", flexShrink: 0 }}>
+                  <p style={{ color: theme.colors.textMuted, fontSize: "12px", flexShrink: 0, margin: 0 }}>
                     {new Date(conv.lastMessage.created_at).toLocaleDateString("de-DE")}
                   </p>
                 )}

@@ -1,51 +1,90 @@
 // src/components/Hero.jsx
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
+import { supabase } from "../lib/supabase";
 
 function Hero() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ musicians: 0, roos: 0, tracks: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const [profilesRes, roosRes, tracksRes] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("roos").select("id", { count: "exact", head: true }),
+        supabase.from("published_tracks").select("id", { count: "exact", head: true }),
+      ]);
+
+      setStats({
+        musicians: profilesRes.count || 0,
+        roos: roosRes.count || 0,
+        tracks: tracksRes.count || 0,
+      });
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <section style={styles.hero}>
-      <div style={styles.glow} />
+      {/* Glow-Effekte */}
+      <div style={styles.glowViolet} />
+      <div style={styles.glowOrange} />
 
-      <p style={styles.eyebrow}>✦ The platform for music creators</p>
+      {/* Eyebrow */}
+      <p style={styles.eyebrow}>✦ Musik-Kollaboration, neu gedacht</p>
 
+      {/* Headline */}
       <h1 style={styles.title}>
-        Your next{" "}
-        <span style={styles.gradient}>Roo</span>
-        <br />
-        is one match away.
+        Mach Musik mit jemandem,{" "}
+        <span style={styles.gradient}>den du noch nicht kennst.</span>
       </h1>
 
+      {/* Subtext */}
       <p style={styles.subtitle}>
-        Find your perfect collaborator. Build something real.
-        <br />
-        Match. Create. Release.
+        Banroo matcht dich mit anderen Musikern. Zusammen baut ihr einen Song –
+        von der ersten Idee bis zum fertigen Track. Einfach loslegen.
       </p>
 
-      <div style={styles.buttonGroup}>
-        <button
-          style={styles.primaryButton}
-          onClick={() => navigate("/match")}
-          onMouseEnter={e => e.target.style.backgroundColor = theme.colors.primaryHover}
-          onMouseLeave={e => e.target.style.backgroundColor = theme.colors.primary}
-        >
-          Start Matching →
-        </button>
+      {/* CTA Button */}
+      <button
+        style={styles.ctaButton}
+        onClick={() => navigate("/match")}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = theme.colors.primaryHover;
+          e.target.style.transform = "translateY(-2px)";
+          e.target.style.boxShadow = "0 8px 30px rgba(139, 92, 246, 0.4)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = theme.colors.primary;
+          e.target.style.transform = "translateY(0)";
+          e.target.style.boxShadow = "0 4px 20px rgba(139, 92, 246, 0.25)";
+        }}
+      >
+        Jetzt Matchen →
+      </button>
 
-        <button
-          style={styles.secondaryButton}
-          onMouseEnter={e => e.target.style.borderColor = "rgba(255,255,255,0.4)"}
-          onMouseLeave={e => e.target.style.borderColor = "rgba(255,255,255,0.15)"}
-        >
-          Learn more
-        </button>
+      {/* Trust-Zeile */}
+      <p style={styles.trust}>Kostenlos. Kein Download. Direkt im Browser.</p>
+
+      {/* Live Stats */}
+      <div style={styles.statsRow}>
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>{stats.musicians}</span>
+          <span style={styles.statLabel}>Musiker</span>
+        </div>
+        <div style={styles.statDivider} />
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>{stats.roos}</span>
+          <span style={styles.statLabel}>Roos gestartet</span>
+        </div>
+        <div style={styles.statDivider} />
+        <div style={styles.stat}>
+          <span style={styles.statNumber}>{stats.tracks}</span>
+          <span style={styles.statLabel}>Songs released</span>
+        </div>
       </div>
-
-      <p style={styles.proof}>
-        🎵 Already <strong style={{ color: theme.colors.textPrimary }}>1,200+ musicians</strong> waiting for their match
-      </p>
     </section>
   );
 }
@@ -54,22 +93,35 @@ const styles = {
   hero: {
     position: "relative",
     textAlign: "center",
-    padding: "120px 20px 100px",
-    maxWidth: "860px",
+    padding: "100px 20px 80px",
+    maxWidth: "820px",
     margin: "0 auto",
     overflow: "hidden",
   },
-  glow: {
+
+  // Glow-Effekte
+  glowViolet: {
     position: "absolute",
-    top: "10%",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "600px",
+    top: "5%",
+    left: "30%",
+    width: "500px",
     height: "400px",
-    background: "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.18) 0%, transparent 70%)",
+    background: "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%)",
     pointerEvents: "none",
     zIndex: 0,
   },
+  glowOrange: {
+    position: "absolute",
+    top: "20%",
+    right: "20%",
+    width: "400px",
+    height: "350px",
+    background: "radial-gradient(ellipse at center, rgba(245, 158, 11, 0.08) 0%, transparent 70%)",
+    pointerEvents: "none",
+    zIndex: 0,
+  },
+
+  // Eyebrow
   eyebrow: {
     position: "relative",
     zIndex: 1,
@@ -77,70 +129,96 @@ const styles = {
     fontSize: theme.fontSizes.sm,
     fontWeight: theme.fontWeights.semibold,
     letterSpacing: "0.08em",
-    marginBottom: "24px",
     textTransform: "uppercase",
+    marginBottom: "28px",
   },
+
+  // Headline
   title: {
     position: "relative",
     zIndex: 1,
-    fontSize: "clamp(2.8rem, 7vw, 5rem)",
+    fontSize: "clamp(2rem, 6vw, 3.8rem)",
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textPrimary,
-    lineHeight: 1.1,
-    marginBottom: "28px",
-    letterSpacing: "-0.03em",
-    textShadow: "0 0 80px rgba(245, 158, 11, 0.15)",
+    lineHeight: 1.15,
+    marginBottom: "24px",
+    letterSpacing: "-0.02em",
   },
-  gradient: {
-    background: "linear-gradient(90deg, #8B5CF6, #F59E0B)",
+gradient: {
+    background: "linear-gradient(135deg, #8B5CF6 0%, #F59E0B 100%)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     backgroundClip: "text",
-    display: "inline-block",
+    display: "inline",
   },
+  // Subtext
   subtitle: {
     position: "relative",
     zIndex: 1,
-    fontSize: theme.fontSizes.lg,
+    fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
     color: theme.colors.textSecondary,
     lineHeight: 1.7,
-    marginBottom: "48px",
+    marginBottom: "40px",
+    maxWidth: "560px",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
-  buttonGroup: {
+
+  // CTA
+  ctaButton: {
     position: "relative",
     zIndex: 1,
-    display: "flex",
-    justifyContent: "center",
-    gap: "16px",
-    flexWrap: "wrap",
-    marginBottom: "40px",
-  },
-  primaryButton: {
     backgroundColor: theme.colors.primary,
     color: "#fff",
-    padding: "16px 32px",
+    padding: "18px 40px",
     border: "none",
     borderRadius: theme.borderRadius.md,
-    fontSize: theme.fontSizes.md,
+    fontSize: "1.1rem",
     fontWeight: theme.fontWeights.semibold,
     cursor: "pointer",
-    transition: "background-color 0.2s",
+    transition: "all 0.2s ease",
+    boxShadow: "0 4px 20px rgba(139, 92, 246, 0.25)",
+    marginBottom: "16px",
   },
-  secondaryButton: {
-    backgroundColor: "transparent",
-    color: theme.colors.textPrimary,
-    padding: "16px 32px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    borderRadius: theme.borderRadius.md,
-    fontSize: theme.fontSizes.md,
-    cursor: "pointer",
-    transition: "border-color 0.2s",
-  },
-  proof: {
+
+  // Trust
+  trust: {
     position: "relative",
     zIndex: 1,
     color: theme.colors.textMuted,
     fontSize: theme.fontSizes.sm,
+    marginBottom: "48px",
+  },
+
+  // Stats
+  statsRow: {
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "24px",
+    flexWrap: "wrap",
+  },
+  stat: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "4px",
+  },
+  statNumber: {
+    fontSize: "clamp(1.5rem, 3vw, 2rem)",
+    fontWeight: theme.fontWeights.bold,
+    color: theme.colors.textPrimary,
+  },
+  statLabel: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.textMuted,
+  },
+  statDivider: {
+    width: "1px",
+    height: "36px",
+    backgroundColor: theme.colors.border,
   },
 };
 
