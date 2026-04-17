@@ -215,11 +215,10 @@ export default function RooDetail() {
       return;
     }
 
-    const artists = [{ track_id: track.id, user_id: user.id }];
-    if (roo.partner_id && roo.partner_id !== user.id) {
-      artists.push({ track_id: track.id, user_id: roo.partner_id });
-    }
-    await supabase.from("published_track_artists").insert(artists);
+    await supabase.from("published_track_artists").insert({
+      track_id: track.id,
+      user_id: user.id,
+    });
 
     setPublished(true);
     setPublishedTrack(track);
@@ -840,6 +839,7 @@ export default function RooDetail() {
               prejoinPageEnabled: true,
               disableModeratorIndicator: true,
               hideConferenceSubject: true,
+              disableDeepLinking: true,
             }}
             interfaceConfigOverwrite={{
               TOOLBAR_BUTTONS: [
