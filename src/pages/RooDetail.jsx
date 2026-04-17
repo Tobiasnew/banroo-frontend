@@ -215,10 +215,11 @@ export default function RooDetail() {
       return;
     }
 
-    await supabase.from("published_track_artists").insert({
-      track_id: track.id,
-      user_id: user.id,
-    });
+    const artists = [{ track_id: track.id, user_id: user.id }];
+    if (roo.partner_id && roo.partner_id !== user.id) {
+      artists.push({ track_id: track.id, user_id: roo.partner_id });
+    }
+    await supabase.from("published_track_artists").insert(artists);
 
     setPublished(true);
     setPublishedTrack(track);
