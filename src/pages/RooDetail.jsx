@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../context/AuthContext";
+import { JitsiMeeting } from "@jitsi/react-sdk";
 
 const statusOptions = ["Idee", "In Progress", "Fertig"];
 const statusColor = {
@@ -566,7 +567,7 @@ export default function RooDetail() {
 
       {/* Tabs */}
       <div style={{ display: "flex", gap: "2px", marginBottom: theme.spacing.xl, backgroundColor: theme.colors.surface, borderRadius: theme.borderRadius.md, padding: "4px" }}>
-        {["session", "chat"].map(tab => (
+        {["session", "chat", "video"].map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -583,7 +584,7 @@ export default function RooDetail() {
               transition: "all 0.2s",
             }}
           >
-            {tab === "session" ? "🎸 Roo Session" : "💬 Chat"}
+{tab === "session" ? "🎸 Session" : tab === "chat" ? "💬 Chat" : "📹 Video"}
           </button>
         ))}
       </div>
@@ -820,6 +821,44 @@ export default function RooDetail() {
               ↑
             </button>
           </div>
+        </div>
+      )}
+      {activeTab === "video" && (
+        <div style={{
+          borderRadius: theme.borderRadius.md,
+          overflow: "hidden",
+          border: "1px solid " + theme.colors.border,
+          height: "500px",
+        }}>
+          <JitsiMeeting
+            domain="meet.jit.si"
+            roomName={"banroo-roo-" + id}
+            configOverwrite={{
+              startWithAudioMuted: true,
+              startWithVideoMuted: false,
+              prejoinPageEnabled: true,
+              disableModeratorIndicator: true,
+              hideConferenceSubject: true,
+            }}
+            interfaceConfigOverwrite={{
+              TOOLBAR_BUTTONS: [
+                "microphone", "camera", "hangup",
+                "chat", "raisehand", "tileview",
+                "select-background", "fullscreen",
+              ],
+              SHOW_JITSI_WATERMARK: false,
+              SHOW_WATERMARK_FOR_GUESTS: false,
+            }}
+            userInfo={{
+              displayName: user?.email?.split("@")[0] || "Musiker",
+            }}
+            getIFrameRef={(node) => {
+              if (node) {
+                node.style.height = "100%";
+                node.style.width = "100%";
+              }
+            }}
+          />
         </div>
       )}
 
