@@ -4,6 +4,7 @@ import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 import Match from "./pages/Match.jsx";
 import MatchResult from "./pages/MatchResult.jsx";
 import RooDetail from "./pages/RooDetail.jsx";
@@ -20,6 +21,7 @@ function App() {
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
+        <Route path="reset-password" element={<ResetPassword />} />
         <Route path="match" element={<Match />} />
         <Route path="match/result" element={<MatchResult />} />
         <Route path="profile/:id" element={<PublicProfile />} />

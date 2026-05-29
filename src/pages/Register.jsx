@@ -11,13 +11,14 @@ function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleRegister = async () => {
     setError("");
     setLoading(true);
     try {
       await register(email, password);
-      navigate("/dashboard");
+      navigate("/app");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -75,23 +76,42 @@ function Register() {
           }}
         />
 
-        <input
-          type="password"
-          placeholder="Passwort"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: theme.spacing.md,
-            marginBottom: theme.spacing.lg,
-            backgroundColor: theme.colors.surfaceHover,
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.sm,
-            color: theme.colors.textPrimary,
-            fontSize: theme.fontSizes.md,
-            boxSizing: "border-box",
-          }}
-        />
+        <div style={{ position: "relative", marginBottom: theme.spacing.lg }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Passwort"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%",
+              padding: theme.spacing.md,
+              paddingRight: "40px",
+              backgroundColor: theme.colors.surfaceHover,
+              border: `1px solid ${theme.colors.border}`,
+              borderRadius: theme.borderRadius.sm,
+              color: theme.colors.textPrimary,
+              fontSize: theme.fontSizes.md,
+              boxSizing: "border-box",
+            }}
+          />
+          <button
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              background: "none",
+              border: "none",
+              color: theme.colors.textSecondary,
+              cursor: "pointer",
+              fontSize: "18px",
+              padding: "0",
+            }}
+          >
+            {showPassword ? "👁️" : "👁️‍🗨️"}
+          </button>
+        </div>
 
         <button
           onClick={handleRegister}
