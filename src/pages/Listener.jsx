@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../styles/theme";
 import { supabase } from "../lib/supabase";
+import AudioPlayer from "../components/AudioPlayer";
 
 const genres = ["Alle", "Pop", "Rock", "Hip-Hop", "Electronic", "Jazz", "R&B", "Metal", "Indie"];
 
@@ -31,8 +32,6 @@ export default function Listener() {
         `)
         .order("created_at", { ascending: false });
 
-      console.log("tracks data:", data);
-      console.log("tracks error:", error);
       if (!error) setTracks(data || []);
       setLoading(false);
     };
@@ -46,6 +45,10 @@ export default function Listener() {
       .from("published_tracks")
       .update({ play_count: (track.play_count || 0) + 1 })
       .eq("id", track.id);
+  };
+
+  const handlePause = () => {
+    setPlayingId(null);
   };
 
   const filteredTracks = activeGenre === "Alle"
@@ -93,6 +96,7 @@ export default function Listener() {
                   index={index + 1}
                   isPlaying={playingId === track.id}
                   onPlay={() => handlePlay(track)}
+                  onPause={handlePause}
                   onArtistClick={(artistId) => navigate(`/profile/${artistId}`)}
                 />
               ))}
@@ -127,9 +131,11 @@ export default function Listener() {
           </div>
 
           {loading ? (
-            <p style={{ color: theme.colors.textSecondary }}>Lädt...</p>
+            <p style={{ color: theme.colors.textSecondary, textAlign: "center", padding: "40px 0" }}>
+              Lädt Songs...
+            </p>
           ) : filteredTracks.length === 0 ? (
-            <p style={{ color: theme.colors.textSecondary, textAlign: "center", marginTop: "40px" }}>
+            <p style={{ color: theme.colors.textSecondary, textAlign: "center", padding: "40px 0" }}>
               Noch keine Songs in diesem Genre.
             </p>
           ) : (
@@ -141,6 +147,7 @@ export default function Listener() {
                   index={index + 1}
                   isPlaying={playingId === track.id}
                   onPlay={() => handlePlay(track)}
+                  onPause={handlePause}
                   onArtistClick={(artistId) => navigate(`/profile/${artistId}`)}
                 />
               ))}
@@ -153,7 +160,7 @@ export default function Listener() {
   );
 }
 
-function TrackCard({ track, index, isPlaying, onPlay, onArtistClick }) {
+function TrackCard({ track, index, isPlaying, onPlay, onPause, onArtistClick }) {
   const artists = track.published_track_artists || [];
 
   return (
@@ -190,17 +197,17 @@ function TrackCard({ track, index, isPlaying, onPlay, onArtistClick }) {
         </div>
       </div>
 
-      {/* Audio Player */}
-      <audio
-        controls
+      {/* Custom Audio Player */}
+      <AudioPlayer
         src={track.file_url}
+        isPlaying={isPlaying}
         onPlay={onPlay}
-        style={{ width: "100%", height: "36px", marginBottom: theme.spacing.md }}
+        onPause={onPause}
       />
 
       {/* Künstler */}
       {artists.length > 0 && (
-        <div style={{ display: "flex", gap: theme.spacing.sm, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: theme.spacing.sm, flexWrap: "wrap", marginTop: theme.spacing.md }}>
           {artists.map(a => a.profiles && (
             <div
               key={a.user_id}
