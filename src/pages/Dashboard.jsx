@@ -32,20 +32,18 @@ export default function Dashboard() {
         return;
       }
 
-      // Partner-Profile für jeden Roo laden
-      const enriched = await Promise.all((data || []).map(async (roo) => {
-        if (!roo.partner_id) return { ...roo, partner: null };
-
-        const { data: profile } = await supabase
+      // Partner-Profile gebündelt laden statt einer Query pro Roo
+      const partnerIds = [...new Set((data || []).map(r => r.partner_id).filter(Boolean))];
+      let profilesById = {};
+      if (partnerIds.length > 0) {
+        const { data: profiles } = await supabase
           .from("profiles")
           .select("id, username, avatar_url, instrument")
-          .eq("id", roo.partner_id)
-          .maybeSingle();
+          .in("id", partnerIds);
+        profilesById = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      }
 
-        return { ...roo, partner: profile };
-      }));
-
-      setRoos(enriched);
+      setRoos((data || []).map(roo => ({ ...roo, partner: profilesById[roo.partner_id] || null })));
       setLoading(false);
     };
 
@@ -61,15 +59,20 @@ export default function Dashboard() {
         return;
       }
 
-      const enriched = await Promise.all((data || []).map(async (conv) => {
-        const partnerId = conv.user1_id === user.id
-          ? conv.user2_id : conv.user1_id;
-        const { data: profile } = await supabase
+      // Partner-Profile gebündelt laden; letzte Nachricht bleibt pro Conversation (klein, parallel)
+      const convs = data || [];
+      const partnerIds = [...new Set(convs.map(c => (c.user1_id === user.id ? c.user2_id : c.user1_id)))];
+      let profilesById = {};
+      if (partnerIds.length > 0) {
+        const { data: profiles } = await supabase
           .from("profiles")
           .select("id, username, avatar_url, instrument, genre")
-          .eq("id", partnerId)
-          .maybeSingle();
+          .in("id", partnerIds);
+        profilesById = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      }
 
+      const enriched = await Promise.all(convs.map(async (conv) => {
+        const partnerId = conv.user1_id === user.id ? conv.user2_id : conv.user1_id;
         const { data: lastMsg } = await supabase
           .from("messages")
           .select("content, created_at")
@@ -78,7 +81,7 @@ export default function Dashboard() {
           .limit(1)
           .maybeSingle();
 
-        return { ...conv, partner: profile, lastMessage: lastMsg };
+        return { ...conv, partner: profilesById[partnerId] || null, lastMessage: lastMsg };
       }));
 
       setConversations(enriched);
@@ -87,7 +90,7 @@ export default function Dashboard() {
 
     fetchRoos();
     fetchConversations();
-  }, []);
+  }, [user.id]);
 
   return (
     <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px" }}>
