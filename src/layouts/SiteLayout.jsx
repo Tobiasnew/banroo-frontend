@@ -19,7 +19,7 @@ const styles = {
     background: "#0E0B1A",
     color: theme.colors.textPrimary,
     fontFamily:
-      "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      "'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
   main: {
     padding: "60px 20px",
